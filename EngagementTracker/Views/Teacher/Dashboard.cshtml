@@ -1,0 +1,952 @@
+@{
+    ViewData["Title"] = "Teacher Dashboard";
+    var name = ViewBag.Name ?? "Teacher";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Teacher Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#07070e;--surface:#0f0f18;--surface2:#13131e;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);
+  --purple:#7c3aed;--purple2:#4f46e5;--purple-glow:rgba(124,58,237,.15);
+  --text:#f0eeff;--muted:rgba(255,255,255,.4);--muted2:rgba(255,255,255,.18);
+  --green:#22c55e;--red:#ef4444;--amber:#f59e0b;
+}
+body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(--text);display:flex;min-height:100vh;}
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:100;}
+.brand{padding:20px 16px 16px;border-bottom:1px solid var(--border);}
+.brand-row{display:flex;align-items:center;gap:10px;}
+.brand-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--purple),var(--purple2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;box-shadow:0 4px 14px rgba(124,58,237,.4);}
+.brand-name{font-weight:800;font-size:.85rem;color:var(--text);}
+.brand-sub{font-size:.65rem;color:var(--muted);margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
+.nav{padding:8px 0;flex:1;}
+/* FIX #1: Nav links must use href="#" so they don't navigate away */
+.nav a{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--muted);text-decoration:none;font-size:.82rem;border-left:3px solid transparent;transition:all .18s;cursor:pointer;}
+.nav a:hover{color:var(--text);background:rgba(255,255,255,.03);}
+.nav a.active{color:#a78bfa;background:var(--purple-glow);border-left-color:var(--purple);}
+.nav-icon{font-size:.95rem;width:18px;text-align:center;}
+.nav-section{font-size:.62rem;font-weight:600;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;padding:14px 16px 4px;}
+.sidebar-bottom{border-top:1px solid var(--border);padding:6px 0;}
+.logout-btn{display:flex;align-items:center;gap:10px;padding:10px 16px;color:rgba(248,113,113,.55);text-decoration:none;font-size:.82rem;transition:all .2s;}
+.logout-btn:hover{color:#f87171;background:rgba(248,113,113,.07);}
+.main{margin-left:220px;padding:24px 28px;flex:1;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.topbar-left h4{font-weight:700;font-size:1.15rem;color:var(--text);}
+.topbar-left p{font-size:.75rem;color:var(--muted);margin-top:2px;}
+.user-chip{background:var(--surface2);border:1px solid var(--border);border-radius:30px;padding:5px 14px 5px 6px;display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;}
+.section{display:none;}
+.section.active{display:block;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;}
+.stat-card:hover{border-color:rgba(124,58,237,.25);transform:translateY(-2px);}
+.stat-glow{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;filter:blur(30px);opacity:.2;}
+.stat-value{font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;margin-bottom:4px;}
+.stat-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.stat-sub{font-size:.72rem;color:var(--muted2);margin-top:5px;}
+.stat-icon{font-size:1.3rem;margin-bottom:10px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:18px;}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-size:.85rem;font-weight:700;color:var(--text);}
+.card-action{font-size:.72rem;color:#a78bfa;cursor:pointer;text-decoration:none;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.2);padding:5px 12px;border-radius:8px;transition:all .2s;}
+.card-action:hover{background:rgba(124,58,237,.2);}
+.badge{padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:600;}
+.b-present{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.15);}
+.b-absent{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.15);}
+.b-late{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.15);}
+.b-ok{background:rgba(34,197,94,.12);color:#4ade80;}
+.b-warn{background:rgba(245,158,11,.12);color:#fbbf24;}
+.b-risk{background:rgba(239,68,68,.12);color:#f87171;}
+.b-fail{background:rgba(239,68,68,.12);color:#f87171;}
+.dtable{width:100%;border-collapse:collapse;font-size:.81rem;}
+.dtable th{padding:9px 12px;text-align:left;font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);}
+.dtable td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text);}
+.dtable tr:last-child td{border-bottom:none;}
+.dtable tr:hover td{background:rgba(255,255,255,.015);}
+.prog-wrap{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:4px;}
+.prog-fill{height:100%;border-radius:3px;}
+.alert-risk{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:12px 16px;color:#fca5a5;font-size:.82rem;display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;}
+.fg input,.fg select{width:100%;background:#111;border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:.65rem .9rem;color:#fff;font-size:.88rem;font-family:inherit;outline:none;transition:border-color .2s;}
+.fg input:focus,.fg select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.15);}
+.fg select option{background:#111;}
+.status-row{display:flex;gap:8px;}
+.status-btn{flex:1;padding:.6rem;text-align:center;border:1px solid rgba(255,255,255,.1);border-radius:9px;cursor:pointer;font-size:.82rem;color:var(--muted);transition:all .2s;background:transparent;}
+.status-btn.s-present.sel{border-color:#22c55e;color:#4ade80;background:rgba(34,197,94,.1);}
+.status-btn.s-absent.sel{border-color:#ef4444;color:#f87171;background:rgba(239,68,68,.1);}
+.status-btn.s-late.sel{border-color:#f59e0b;color:#fbbf24;background:rgba(245,158,11,.1);}
+.btn-save{width:100%;padding:.78rem;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:10px;color:#fff;font-size:.93rem;font-weight:700;font-family:inherit;cursor:pointer;margin-top:6px;transition:opacity .2s;}
+.btn-save:hover{opacity:.9;}
+.success-msg{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:10px 14px;color:#4ade80;font-size:.8rem;margin-top:10px;display:none;}
+.empty{color:var(--muted);font-size:.82rem;padding:16px 0;}
+.loading{color:var(--muted2);font-size:.8rem;padding:20px 0;text-align:center;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.span2{grid-column:span 2;}
+.action-btn{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:7px;color:#a78bfa;padding:5px 12px;font-size:.75rem;cursor:pointer;transition:all .2s;}
+.action-btn:hover{background:rgba(124,58,237,.25);}
+.sub-modal{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:18px;margin-top:16px;display:none;}
+.sub-modal.open{display:block;}
+/* LIVE CARD */
+.live-card{background:linear-gradient(145deg,#0f172a,#1e293b);padding:20px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.4);}
+.live-input{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:none;background:#020617;color:white;}
+.live-btns{display:flex;gap:10px;margin-top:15px;}
+.btn-live{flex:1;padding:12px;border-radius:12px;border:none;font-weight:600;cursor:pointer;transition:0.3s;}
+.btn-live.start{background:linear-gradient(90deg,#22c55e,#16a34a);color:white;}
+.btn-live.start:hover{transform:scale(1.05);}
+.btn-live.end{background:linear-gradient(90deg,#ef4444,#dc2626);color:white;}
+.btn-live.end:hover{transform:scale(1.05);}
+.live-status{margin-top:15px;font-weight:bold;font-size:14px;}
+.chart-modal { background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px; padding: 18px; margin-top: 16px; display: none; }
+.chart-modal.open { display: block; }
+.chart-container { position: relative; height: 250px; width: 100%; border-radius: 8px; margin-top: 10px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="brand">
+    <div class="brand-row">
+      <div class="brand-icon">📊</div>
+      <div><div class="brand-name">EngageTracker</div><div class="brand-sub">Teacher Portal</div></div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Main</div>
+
+    <!-- FIX #1: All nav links now use href="#" + data-sec + onclick="goSec(this)"
+         so they switch sections instead of navigating away from the page -->
+    <a href="#" data-sec="dashboard" onclick="goSec(this)" class="active">
+      <span class="nav-icon">⚡</span>Dashboard
+    </a>
+    <a href="#" data-sec="students" onclick="goSec(this)">
+      <span class="nav-icon">👥</span>All Students
+    </a>
+    <a href="#" data-sec="attendance" onclick="goSec(this)">
+      <span class="nav-icon">🗓</span>Mark Attendance
+    </a>
+    <a href="#" data-sec="marks" onclick="goSec(this)">
+      <span class="nav-icon">📝</span>Enter Marks
+    </a>
+    <a href="#" data-sec="timetable" onclick="goSec(this)">
+      <span class="nav-icon">🗓</span>Manage Timetables
+    </a>
+
+    <div class="nav-section">Reports</div>
+
+    <a href="#" data-sec="atrisk" onclick="goSec(this)">
+      <span class="nav-icon">⚠️</span>At-Risk Students
+    </a>
+    <a href="#" data-sec="assignments" onclick="goSec(this)">
+      <span class="nav-icon">📂</span>Assignments
+    </a>
+    <a href="#" data-sec="engagement" onclick="goSec(this)">
+      <span class="nav-icon">🎥</span>Engagement
+    </a>
+    <!-- Live Quiz opens a new tab so a real href is correct here -->
+    <a href="/Quiz" target="_blank">
+      <span class="nav-icon">🎮</span>Live Quiz
+    </a>
+  </nav>
+  <div class="sidebar-bottom">
+    <a class="logout-btn" href="/Auth/Logout"><span class="nav-icon">🚪</span>Logout</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h4 id="page-title">Dashboard</h4>
+      <p id="page-sub">Good day, @name 👋</p>
+    </div>
+    <div class="user-chip">
+      <div class="user-avatar">@name[0]</div>@name
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="sec-dashboard" class="section active">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-glow" style="background:#7c3aed;"></div><div class="stat-icon">👥</div><div class="stat-value" id="st-students">--</div><div class="stat-label">Total Students</div><div class="stat-sub">registered in system</div></div>
+      <div class="stat-card"><div class="stat-glow" style="background:#22c55e;"></div><div class="stat-icon">📅</div><div class="stat-value" id="st-att">--%</div><div class="stat-label">Avg Attendance</div><div class="stat-sub">across all students</div></div>
+      <div class="stat-card"><div class="stat-glow" style="background:#ef4444;"></div><div class="stat-icon">⚠️</div><div class="stat-value" id="st-risk">--</div><div class="stat-label">At-Risk Students</div><div class="stat-sub">below 75% attendance</div></div>
+      <div class="stat-card"><div class="stat-glow" style="background:#f59e0b;"></div><div class="stat-icon">📂</div><div class="stat-value" id="st-assign">--</div><div class="stat-label">Assignments</div><div class="stat-sub">posted total</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head"><span class="card-title">👥 Recent Students</span><a class="card-action" onclick="goSecById('students')">View all →</a></div>
+        <div id="d-students"><div class="loading">Loading...</div></div>
+      </div>
+      <div class="live-card">
+        <h3>🎥 Live Class Control</h3>
+        <input id="live-subject" placeholder="Enter Subject (e.g. DSA)" class="live-input" />
+        <input type="number" id="durationInput" placeholder="Duration (minutes)" value="60"
+               style="width:100%;padding:10px;background:#1a1a35;border:1px solid #3d3d6b;
+              color:#fff;border-radius:8px;margin-bottom:8px"/>
+        <div class="live-btns">
+          <button onclick="startLiveClass()" class="btn-live start">▶ Start Class</button>
+          <button onclick="joinLiveMeeting()" class="btn-live" id="join-btn" style="background:#7c3aed;color:#fff;display:none;">🎥 Join Meeting</button>
+          <button onclick="endLiveClass()" class="btn-live end">■ End Class</button>
+        </div>
+        <div id="live-status" class="live-status">🔴 Not Live</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">⚠️ At-Risk Students</span><a class="card-action" onclick="goSecById('atrisk')">View all →</a></div>
+      <div id="d-atrisk-preview"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- ALL STUDENTS -->
+  <div id="sec-students" class="section">
+    <div class="card">
+      <div class="card-head"><span class="card-title">👥 All Registered Students</span></div>
+      <div id="students-table"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- MARK ATTENDANCE -->
+  <div id="sec-attendance" class="section">
+    <div class="card" style="margin-bottom:18px;border-color:rgba(124,58,237,.25);">
+      <div class="card-head">
+        <span class="card-title">🎥 Auto Face Attendance</span>
+        <span style="font-size:.72rem;color:#a78bfa;background:rgba(124,58,237,.1);padding:4px 10px;border-radius:20px;">Powered by EmguCV</span>
+      </div>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px;">Point the camera at the class. The system will automatically detect and mark attendance for all registered students.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div class="fg"><label>Subject</label><input id="face-subject" type="text" placeholder="e.g. DBMS"/></div>
+        <div class="fg"><label>Date</label><input id="face-date" type="date"/></div>
+      </div>
+      <div style="position:relative;border-radius:12px;overflow:hidden;background:#000;margin-bottom:14px;" id="face-cam-wrap" hidden>
+        <video id="face-webcam" autoplay playsinline style="width:100%;max-height:280px;object-fit:cover;display:block;"></video>
+        <div id="face-scan-overlay" style="position:absolute;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,.5);display:none;">
+          <div style="color:#fff;font-size:1rem;font-weight:700;">🔍 Scanning faces...</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-save" id="face-start-btn" onclick="startFaceScan()" style="flex:1;margin-top:0;">📷 Open Camera & Scan</button>
+        <div style="margin-top:15px;display:flex;gap:10px;">
+          <!-- FIX #2: startClass / endClass now defined below -->
+          <button onclick="startClass()" style="padding:10px 20px;background:#22c55e;border:none;border-radius:8px;color:white;cursor:pointer;">▶ Start Class</button>
+          <button onclick="endClass()" style="padding:10px 20px;background:#ef4444;border:none;border-radius:8px;color:white;cursor:pointer;">⏹ End Class</button>
+        </div>
+        <button id="face-capture-btn" onclick="captureFaceScan()" style="flex:1;padding:.78rem;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:10px;color:#4ade80;font-size:.9rem;font-weight:700;cursor:pointer;display:none;">✅ Take Scan & Mark Attendance</button>
+      </div>
+      <div id="face-results" style="margin-top:16px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">📅 Mark Attendance</span></div>
+      <div class="form-grid">
+        <div class="fg"><label>Select Student</label><select id="att-student"><option value="">-- Select Student --</option></select></div>
+        <div class="fg"><label>Subject</label><input id="att-subject" type="text" placeholder="e.g. DBMS"/></div>
+        <div class="fg"><label>Date</label><input id="att-date" type="date"/></div>
+        <div class="fg"><label>Status</label>
+          <div class="status-row">
+            <div class="status-btn s-present" onclick="selStatus('Present',this)">✅ Present</div>
+            <div class="status-btn s-absent" onclick="selStatus('Absent',this)">❌ Absent</div>
+            <div class="status-btn s-late" onclick="selStatus('Late',this)">⏰ Late</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-save" onclick="submitAttendance()">Save Attendance</button>
+      <div class="success-msg" id="att-success">✅ Attendance marked successfully!</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">📊 Recent Attendance Records</span></div>
+      <div id="att-records"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- ENTER MARKS -->
+  <div id="sec-marks" class="section">
+    <div class="card">
+      <div class="card-head"><span class="card-title">📝 Enter Student Marks</span></div>
+      <div class="form-grid">
+        <div class="fg"><label>Select Student</label><select id="marks-student"><option value="">-- Select Student --</option></select></div>
+        <div class="fg"><label>Subject Name</label><input id="marks-subject" type="text" placeholder="e.g. Data Structures"/></div>
+        <div class="fg"><label>Exam Type</label>
+          <select id="marks-exam">
+            <option value="Midterm">Midterm</option>
+            <option value="EndTerm">End Term</option>
+            <option value="Quiz">Quiz</option>
+            <option value="Assignment">Assignment</option>
+            <option value="Practical">Practical</option>
+          </select>
+        </div>
+        <div class="fg"><label>Max Score</label><input id="marks-max" type="number" placeholder="100" min="1"/></div>
+        <div class="fg"><label>Score Obtained</label><input id="marks-score" type="number" placeholder="85" min="0"/></div>
+        <div class="fg"><label>Grade Preview</label><div id="grade-preview" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:.65rem .9rem;font-size:.88rem;color:var(--muted);">Enter scores to see grade</div></div>
+      </div>
+      <button class="btn-save" onclick="submitMarks()">Save Marks</button>
+      <div class="success-msg" id="marks-success">✅ Marks saved successfully!</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">📊 Recent Marks Records</span></div>
+      <div id="marks-records"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+    <!-- ================= TIMETABLE ================= -->
+    <div id="sec-timetable" class="section">
+      <div class="card p-lg">
+        <h2 style="margin-top:0;">Manage Class Timetables</h2>
+        <p style="color:#64748b; margin-bottom: 20px;">Use this builder to construct the weekly schedule for a specific Class Section.</p>
+
+        <div style="margin-bottom:20px; display:flex; gap:10px;">
+          <select id="tt-section-select" class="t-input" style="flex:1;">
+            <option value="">-- Select Section --</option>
+            <option value="A">Section A</option>
+            <option value="B">Section B</option>
+            <option value="C">Section C</option>
+            <option value="O">Section O</option>
+          </select>
+          <button class="btn btn-primary" onclick="loadSectionTimetable()">Load Timetable</button>
+        </div>
+
+        <div id="timetable-builder" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+             <h3>Timetable for Section <span id="lbl-tt-section"></span></h3>
+             <button class="btn" style="background:#10b981;" onclick="addTimetableRow()">+ Add Slot</button>
+          </div>
+          <table class="dtable" style="margin-top: 15px;">
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Start (HH:MM)</th>
+                <th>End (HH:MM)</th>
+                <th>Subject</th>
+                <th>Room</th>
+                <th>Teacher Name</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tt-tbody">
+              <!-- Rows injected via JS -->
+            </tbody>
+          </table>
+          
+          <button class="btn btn-primary" style="margin-top:20px; width:100%;" onclick="saveSectionTimetable()">💾 Save Changes to Section</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= AT RISK ================= -->
+  <div id="sec-atrisk" class="section">
+    <div class="alert-risk">⚠️ <strong>Students below 75% attendance need immediate attention.</strong></div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">⚠️ At-Risk Students (Below 75%)</span></div>
+      <div id="atrisk-table"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- ASSIGNMENTS -->
+  <div id="sec-assignments" class="section">
+    <div class="card">
+      <div class="card-head"><span class="card-title">➕ Create New Assignment</span></div>
+      <div class="form-grid">
+        <div class="fg"><label>Title</label><input id="a-title" type="text" placeholder="e.g. DBMS Lab Report"/></div>
+        <div class="fg"><label>Subject</label><input id="a-subject" type="text" placeholder="e.g. DBMS"/></div>
+        <div class="fg"><label>Due Date</label><input id="a-due" type="date"/></div>
+        <div class="fg"><label>Max Marks</label><input id="a-marks" type="number" placeholder="100"/></div>
+        <div class="fg span2"><label>Description</label><input id="a-desc" type="text" placeholder="Brief description of the assignment"/></div>
+      </div>
+      <button class="btn-save" id="assign-btn" onclick="createAssignment()">Post Assignment</button>
+      <div class="success-msg" id="assign-success">✅ Assignment posted successfully!</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">📂 All Posted Assignments</span></div>
+      <div id="assign-teacher-list"><div class="loading">Loading...</div></div>
+    </div>
+    <div class="sub-modal" id="sub-panel">
+      <div class="card-head">
+        <span class="card-title" id="sub-title">Submissions</span>
+        <span class="card-action" onclick="document.getElementById('sub-panel').classList.remove('open')">✕ Close</span>
+      </div>
+      <div id="sub-list"></div>
+    </div>
+  </div>
+
+  <!-- ENGAGEMENT -->
+  <div id="sec-engagement" class="section">
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="stat-card"><div class="stat-glow" style="background:#7c3aed;"></div><div class="stat-icon">👥</div><div class="stat-value" id="eng-total">--</div><div class="stat-label">Students Tracked</div><div class="stat-sub">with engagement data</div></div>
+      <div class="stat-card"><div class="stat-glow" style="background:#22c55e;"></div><div class="stat-icon">🔥</div><div class="stat-value" id="eng-avg">--</div><div class="stat-label">Avg Score</div><div class="stat-sub">across all students</div></div>
+      <div class="stat-card"><div class="stat-glow" style="background:#ef4444;"></div><div class="stat-icon">⚠️</div><div class="stat-value" id="eng-low">--</div><div class="stat-label">Low Engagement</div><div class="stat-sub">score below 40</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">🎥 Student Engagement Scores</span><span class="card-action" onclick="loadEngagement()">🔄 Refresh</span></div>
+      <div id="engagement-table"><div class="loading">Loading...</div></div>
+      <div class="chart-modal" id="teacher-eng-chart-panel">
+        <div class="card-head">
+          <span class="card-title" id="teacher-eng-chart-title">Student Trend</span>
+          <span class="card-action" onclick="document.getElementById('teacher-eng-chart-panel').classList.remove('open')" style="color:#a78bfa; cursor:pointer; font-size:.72rem;">✕ Close</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="teacher-eng-chart-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var students=[],allAtt=[],allMarks=[],teacherAssignments=[];
+var selAttStatus='';
+var pageTitles={dashboard:'Dashboard',students:'All Students',attendance:'Mark Attendance',marks:'Enter Marks',atrisk:'At-Risk Students',assignments:'Assignments',engagement:'Student Engagement'};
+var pageSubs={dashboard:'Good day, @name 👋',students:'Manage student records',attendance:'Track class attendance',marks:'Record academic performance',atrisk:'Students needing attention',assignments:'Create and grade assignments',engagement:'Monitor student engagement scores'};
+
+// FIX #1: goSec now calls event.preventDefault() to stop the href="#" from scrolling,
+// and reads the section id from data-sec attribute which all nav links now have.
+function goSec(el){
+  event.preventDefault();
+  var sec=el.dataset.sec;
+  if(!sec) return;
+  switchSec(sec);
+  document.querySelectorAll('.nav a').forEach(function(a){a.classList.remove('active');});
+  el.classList.add('active');
+}
+
+function goSecById(id){
+  switchSec(id);
+  document.querySelectorAll('.nav a').forEach(function(a){
+    a.classList.remove('active');
+    if(a.dataset.sec===id) a.classList.add('active');
+  });
+}
+
+function switchSec(id){
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  var target=document.getElementById('sec-'+id);
+  if(target) target.classList.add('active');
+  document.getElementById('page-title').textContent=pageTitles[id]||id;
+  document.getElementById('page-sub').textContent=pageSubs[id]||'';
+}
+
+var engagementData=[];
+
+async function loadEngagement(){
+  try{
+    var r=await fetch('/Engagement/GetSummaries');
+    if(!r.ok) return;
+    engagementData=await r.json();
+    renderEngagement();
+  }catch(e){}
+}
+
+function renderEngagement(){
+  document.getElementById('eng-total').textContent=engagementData.length;
+  var avg=engagementData.length===0?0:(engagementData.reduce(function(s,e){return s+e.averageScore;},0)/engagementData.length).toFixed(1);
+  document.getElementById('eng-avg').textContent=avg;
+  document.getElementById('eng-low').textContent=engagementData.filter(function(e){return e.averageScore<40;}).length;
+      document.getElementById('engagement-table').innerHTML=engagementData.length===0
+    ?'<p class="empty">No engagement data yet. Students need to start engagement sessions.</p>'
+    :'<table class="dtable"><thead><tr><th>Student</th><th>Avg Score</th><th>Sessions</th><th>Last Active</th><th>Status</th><th>Action</th></tr></thead><tbody>'+
+    engagementData.map(function(e){
+      var color=e.averageScore>=70?'#4ade80':e.averageScore>=40?'#fbbf24':'#f87171';
+      var badge=e.averageScore>=70?'b-ok':e.averageScore>=40?'b-warn':'b-risk';
+      var pct=Math.round(e.averageScore);
+      return '<tr>'+
+        '<td style="font-weight:600;">'+e.studentName+'</td>'+
+        '<td><strong style="color:'+color+';">'+e.averageScore+'</strong>'+
+        '<div class="prog-wrap"><div class="prog-fill" style="width:'+pct+'%;background:'+color+'"></div></div></td>'+
+        '<td>'+e.totalSessions+' sessions</td>'+
+        '<td style="color:var(--muted);font-size:.78rem;">'+e.lastActive+'</td>'+
+        '<td><span class="badge '+badge+'">'+e.status+'</span></td>'+
+        '<td><button class="action-btn" onclick="viewStudentGraph(\''+e.studentUid+'\',\''+e.studentName+'\')">View Details</button></td>'+
+        '</tr>';
+    }).join('')+
+    '</tbody></table>';
+}
+
+var teacherEngChart = null;
+async function viewStudentGraph(studentUid, name) {
+    document.getElementById('teacher-eng-chart-title').textContent = 'Trend: ' + name;
+    document.getElementById('teacher-eng-chart-panel').classList.add('open');
+    try {
+        var r = await fetch('/Engagement/GetStudentSessions?studentUid=' + studentUid);
+        if (!r.ok) return;
+        var sessions = await r.json();
+        sessions = sessions.reverse();
+        var labels = sessions.map(s => new Date(s.timestamp).toLocaleDateString([],{month:'short',day:'numeric'}));
+        var scores = sessions.map(s => s.averageScore);
+        
+        if (teacherEngChart) teacherEngChart.destroy();
+        var ctx = document.getElementById('teacher-eng-chart-canvas').getContext('2d');
+        teacherEngChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: labels,
+              datasets: [{ label: 'Avg Session Score', data: scores, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.2)', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4 }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, ticks: { color: '#888' }, grid: { color: '#2a2a4a' } }, x: { ticks: { color: '#888' }, grid: { display: false } } }, plugins: { legend: { display: false } } }
+      });
+    } catch(e){}
+}
+
+async function loadAll(){
+  var faceDate=document.getElementById('face-date');
+  if(faceDate) faceDate.value=new Date().toISOString().split('T')[0];
+  try{var r=await fetch('/Teacher/GetStudents');if(r.ok){students=await r.json();populateDropdowns();}}catch(e){}
+  try{var r2=await fetch('/Teacher/GetAllAttendance');if(r2.ok)allAtt=await r2.json();}catch(e){}
+  try{var r3=await fetch('/Teacher/GetAllMarks');if(r3.ok)allMarks=await r3.json();}catch(e){}
+  try{var r4=await fetch('/Assignment/GetAll');if(r4.ok)teacherAssignments=await r4.json();}catch(e){}
+  render();
+  // FIX #3: loadEngagement was never called on page load — engagement section stayed on "Loading..." forever
+  loadEngagement();
+}
+
+function populateDropdowns(){
+  var opts=students.map(function(s){return '<option value="'+s.uid+'">'+s.name+' (Roll: '+s.rollNo+')</option>';}).join('');
+  document.getElementById('att-student').innerHTML='<option value="">-- Select Student --</option>'+opts;
+  document.getElementById('marks-student').innerHTML='<option value="">-- Select Student --</option>'+opts;
+}
+
+function render(){
+  document.getElementById('st-students').textContent=students.length;
+  document.getElementById('st-assign').textContent=teacherAssignments.length;
+  var attMap={};
+  allAtt.forEach(function(a){if(!attMap[a.studentUid])attMap[a.studentUid]={p:0,t:0};attMap[a.studentUid].t++;if(a.status==='Present'||a.status==='Late')attMap[a.studentUid].p++;});
+  var pcts=Object.values(attMap).map(function(s){return s.t===0?0:Math.round(s.p*100/s.t);});
+  var avgAtt=pcts.length===0?0:Math.round(pcts.reduce(function(a,b){return a+b;},0)/pcts.length);
+  document.getElementById('st-att').textContent=avgAtt+'%';
+  document.getElementById('st-risk').textContent=pcts.filter(function(p){return p<75;}).length;
+  renderStudentsPreview();
+  renderStudentsTable();
+  renderAtRiskPreview();
+  renderAtRiskTable();
+  renderAttRecords();
+  renderMarksRecords();
+  renderAssignments();
+  document.getElementById('att-date').value=new Date().toISOString().split('T')[0];
+}
+
+function renderStudentsPreview(){
+  document.getElementById('d-students').innerHTML=students.length===0?'<p class="empty">No students registered yet.</p>':'<table class="dtable"><thead><tr><th>Name</th><th>Roll No</th><th>Section</th></tr></thead><tbody>'+students.slice(0,5).map(function(s){return '<tr><td style="font-weight:600;">'+s.name+'</td><td>'+s.rollNo+'</td><td>'+s.section+'</td></tr>';}).join('')+'</tbody></table>';
+}
+
+function renderStudentsTable(){
+  var attMap={};allAtt.forEach(function(a){if(!attMap[a.studentUid])attMap[a.studentUid]={p:0,t:0};attMap[a.studentUid].t++;if(a.status==='Present'||a.status==='Late')attMap[a.studentUid].p++;});
+  document.getElementById('students-table').innerHTML=students.length===0?'<p class="empty">No students yet.</p>':'<table class="dtable"><thead><tr><th>Name</th><th>Email</th><th>Roll No</th><th>Section</th><th>Attendance</th><th>Status</th></tr></thead><tbody>'+students.map(function(s){var att=attMap[s.uid]||{p:0,t:0};var pct=att.t===0?0:Math.round(att.p*100/att.t);return '<tr><td style="font-weight:600;">'+s.name+'</td><td style="color:var(--muted);">'+s.email+'</td><td>'+s.rollNo+'</td><td>'+s.section+'</td><td><strong>'+pct+'%</strong><div class="prog-wrap"><div class="prog-fill" style="width:'+pct+'%;background:'+(pct>=75?'#22c55e':'#ef4444')+'"></div></div></td><td><span class="badge '+(pct<75?'b-risk':'b-ok')+'">'+(pct<75?'⚠ At Risk':'✅ OK')+'</span></td></tr>';}).join('')+'</tbody></table>';
+}
+
+function renderAtRiskPreview(){
+  var attMap={};allAtt.forEach(function(a){if(!attMap[a.studentUid])attMap[a.studentUid]={p:0,t:0};attMap[a.studentUid].t++;if(a.status==='Present'||a.status==='Late')attMap[a.studentUid].p++;});
+  var risk=students.filter(function(s){var att=attMap[s.uid]||{p:0,t:0};return att.t>0&&Math.round(att.p*100/att.t)<75;});
+  document.getElementById('d-atrisk-preview').innerHTML=risk.length===0?'<p class="empty" style="color:#4ade80;">✅ No at-risk students!</p>':risk.slice(0,4).map(function(s){var att=attMap[s.uid]||{p:0,t:0};var pct=Math.round(att.p*100/att.t);return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);"><div><div style="font-size:.83rem;font-weight:600;">'+s.name+'</div><div style="font-size:.73rem;color:var(--muted);">Roll: '+s.rollNo+'</div></div><span class="badge b-risk">'+pct+'%</span></div>';}).join('');
+}
+
+function renderAtRiskTable(){
+  var attMap={};allAtt.forEach(function(a){if(!attMap[a.studentUid])attMap[a.studentUid]={p:0,ab:0,l:0,t:0};attMap[a.studentUid].t++;if(a.status==='Present')attMap[a.studentUid].p++;else if(a.status==='Absent')attMap[a.studentUid].ab++;else if(a.status==='Late')attMap[a.studentUid].l++;});
+  var risk=students.filter(function(s){var att=attMap[s.uid]||{p:0,t:0,ab:0,l:0};return att.t>0&&Math.round((att.p+att.l)*100/att.t)<75;});
+  document.getElementById('atrisk-table').innerHTML=risk.length===0?'<p class="empty" style="color:#4ade80;">✅ All students have good attendance!</p>':'<table class="dtable"><thead><tr><th>Name</th><th>Roll No</th><th>Present</th><th>Absent</th><th>Late</th><th>Attendance %</th></tr></thead><tbody>'+risk.map(function(s){var att=attMap[s.uid]||{p:0,ab:0,l:0,t:0};var pct=Math.round((att.p+att.l)*100/att.t);return '<tr><td style="font-weight:600;color:#f87171;">'+s.name+'</td><td>'+s.rollNo+'</td><td><span class="badge b-present">'+att.p+'</span></td><td><span class="badge b-absent">'+att.ab+'</span></td><td><span class="badge b-late">'+att.l+'</span></td><td><strong style="color:#f87171;">'+pct+'%</strong><div class="prog-wrap"><div class="prog-fill" style="width:'+pct+'%;background:#ef4444;"></div></div></td></tr>';}).join('')+'</tbody></table>';
+}
+
+function renderAttRecords(){
+  var recent=[].concat(allAtt).reverse().slice(0,8);
+  document.getElementById('att-records').innerHTML=recent.length===0?'<p class="empty">No attendance records yet.</p>':'<table class="dtable"><thead><tr><th>Student</th><th>Subject</th><th>Date</th><th>Status</th></tr></thead><tbody>'+recent.map(function(a){var stu=students.find(function(s){return s.uid===a.studentUid;})||{name:'Unknown'};return '<tr><td style="font-weight:600;">'+stu.name+'</td><td>'+a.subjectId+'</td><td>'+a.date+'</td><td><span class="badge b-'+a.status.toLowerCase()+'">'+a.status+'</span></td></tr>';}).join('')+'</tbody></table>';
+}
+
+function renderMarksRecords(){
+  var recent=[].concat(allMarks).reverse().slice(0,8);
+  document.getElementById('marks-records').innerHTML=recent.length===0?'<p class="empty">No marks entered yet.</p>':'<table class="dtable"><thead><tr><th>Student</th><th>Subject</th><th>Exam</th><th>Score</th><th>Grade</th><th>GPA</th></tr></thead><tbody>'+recent.map(function(m){var stu=students.find(function(s){return s.uid===m.studentUid;})||{name:'Unknown'};return '<tr><td style="font-weight:600;">'+stu.name+'</td><td>'+m.subjectName+'</td><td>'+m.examType+'</td><td>'+m.score+'/'+m.maxScore+'</td><td><span class="badge" style="background:rgba(124,58,237,.12);color:#a78bfa;">'+m.grade+'</span></td><td><strong>'+m.gpaPoints+'</strong></td></tr>';}).join('')+'</tbody></table>';
+}
+
+function renderAssignments(){
+  document.getElementById('assign-teacher-list').innerHTML=teacherAssignments.length===0
+    ?'<p class="empty">No assignments posted yet. Create one above!</p>'
+    :'<table class="dtable"><thead><tr><th>Title</th><th>Subject</th><th>Due Date</th><th>Max Marks</th><th>Description</th><th>Action</th></tr></thead><tbody>'+
+      teacherAssignments.map(function(a){
+        return '<tr><td style="font-weight:600;">'+a.title+'</td><td>'+a.subjectName+'</td><td>'+a.dueDate+'</td><td>'+a.maxMarks+'</td><td style="color:var(--muted);">'+a.description+'</td><td><button class="action-btn" onclick="viewSubmissions(\''+a.id+'\',\''+a.title+'\')">View Submissions</button></td></tr>';
+      }).join('')+
+    '</tbody></table>';
+}
+
+function selStatus(val,el){
+  selAttStatus=val;
+  document.querySelectorAll('.status-btn').forEach(function(b){b.classList.remove('sel');});
+  el.classList.add('sel');
+}
+
+document.addEventListener('input',function(e){
+  if(e.target.id==='marks-score'||e.target.id==='marks-max'){
+    var score=parseFloat(document.getElementById('marks-score').value)||0;
+    var max=parseFloat(document.getElementById('marks-max').value)||0;
+    if(max>0){var pct=score*100/max;var grade=pct>=90?'A+ (10.0)':pct>=80?'A (9.0)':pct>=70?'B+ (8.0)':pct>=60?'B (7.0)':pct>=50?'C (6.0)':'F (0.0)';var color=pct>=70?'#4ade80':pct>=50?'#fbbf24':'#f87171';document.getElementById('grade-preview').innerHTML='<strong style="color:'+color+';">'+grade+'</strong> ('+Math.round(pct)+'%)';}
+  }
+});
+
+async function submitAttendance(){
+  var studentUid=document.getElementById('att-student').value;
+  var subjectId=document.getElementById('att-subject').value.trim();
+  var date=document.getElementById('att-date').value;
+  if(!studentUid||!subjectId||!date||!selAttStatus){alert('Please fill all fields and select a status.');return;}
+  var btn=document.querySelector('#sec-attendance .btn-save');
+  btn.textContent='Saving...';btn.style.opacity='.6';
+  try{
+    var r=await fetch('/Attendance/Mark',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({studentUid:studentUid,subjectId:subjectId,date:date,status:selAttStatus})});
+    if(r.ok){
+      document.getElementById('att-success').style.display='block';
+      setTimeout(function(){document.getElementById('att-success').style.display='none';},3000);
+      var r2=await fetch('/Teacher/GetAllAttendance');if(r2.ok)allAtt=await r2.json();
+      renderAttRecords();renderStudentsTable();renderAtRiskPreview();renderAtRiskTable();
+    }else{alert('Failed to save.');}
+  }catch(e){alert('Error: '+e.message);}
+  btn.textContent='Save Attendance';btn.style.opacity='1';
+}
+
+async function submitMarks(){
+  var studentUid=document.getElementById('marks-student').value;
+  var subjectName=document.getElementById('marks-subject').value.trim();
+  var examType=document.getElementById('marks-exam').value;
+  var score=parseFloat(document.getElementById('marks-score').value);
+  var maxScore=parseFloat(document.getElementById('marks-max').value);
+  if(!studentUid||!subjectName||!score||!maxScore){alert('Please fill all fields.');return;}
+  if(score>maxScore){alert('Score cannot be greater than max score.');return;}
+  var btn=document.querySelector('#sec-marks .btn-save');
+  btn.textContent='Saving...';btn.style.opacity='.6';
+  try{
+    var r=await fetch('/Marks/Save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({studentUid:studentUid,subjectId:subjectName,subjectName:subjectName,examType:examType,score:score,maxScore:maxScore})});
+    if(r.ok){
+      document.getElementById('marks-success').style.display='block';
+      setTimeout(function(){document.getElementById('marks-success').style.display='none';},3000);
+      var r2=await fetch('/Teacher/GetAllMarks');if(r2.ok)allMarks=await r2.json();
+      renderMarksRecords();
+    }else{alert('Failed to save.');}
+  }catch(e){alert('Error: '+e.message);}
+  btn.textContent='Save Marks';btn.style.opacity='1';
+}
+
+async function createAssignment(){
+  var title=document.getElementById('a-title').value.trim();
+  var subject=document.getElementById('a-subject').value.trim();
+  var due=document.getElementById('a-due').value;
+  var marks=parseFloat(document.getElementById('a-marks').value);
+  var desc=document.getElementById('a-desc').value.trim();
+  if(!title||!subject||!due||!marks){alert('Please fill Title, Subject, Due Date and Max Marks.');return;}
+  var btn=document.getElementById('assign-btn');
+  btn.textContent='Posting...';btn.style.opacity='.6';
+  try{
+    var r=await fetch('/Assignment/Create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,subjectName:subject,dueDate:due,maxMarks:marks,description:desc,teacherUid:'',createdAt:'',id:''})});
+    if(r.ok){
+      document.getElementById('assign-success').style.display='block';
+      setTimeout(function(){document.getElementById('assign-success').style.display='none';},3000);
+      ['a-title','a-subject','a-desc','a-marks'].forEach(function(id){document.getElementById(id).value='';});
+      var r2=await fetch('/Assignment/GetAll');if(r2.ok)teacherAssignments=await r2.json();
+      document.getElementById('st-assign').textContent=teacherAssignments.length;
+      renderAssignments();
+    }else{alert('Failed to post assignment.');}
+  }catch(e){alert('Error: '+e.message);}
+  btn.textContent='Post Assignment';btn.style.opacity='1';
+}
+
+async function viewSubmissions(assignmentId,title){
+  document.getElementById('sub-title').textContent='📋 Submissions for: '+title;
+  document.getElementById('sub-list').innerHTML='<div class="loading">Loading...</div>';
+  document.getElementById('sub-panel').classList.add('open');
+  try{
+    var r=await fetch('/Assignment/GetSubmissions?assignmentId='+assignmentId);
+    if(!r.ok){document.getElementById('sub-list').innerHTML='<p class="empty">Failed to load.</p>';return;}
+    var subs=await r.json();
+    document.getElementById('sub-list').innerHTML=subs.length===0?'<p class="empty">No submissions yet.</p>':
+      '<table class="dtable"><thead><tr><th>Student</th><th>File/Link</th><th>Submitted</th><th>Grade</th><th>Action</th></tr></thead><tbody>'+
+      subs.map(function(s){
+        return '<tr><td style="font-weight:600;">'+s.studentName+'</td>'+
+          '<td><a href="'+s.fileUrl+'" target="_blank" style="color:#a78bfa;text-decoration:none;">'+s.fileName+' 🔗</a></td>'+
+          '<td style="color:var(--muted);">'+s.submittedAt+'</td>'+
+          '<td>'+(s.isGraded?'<span class="badge b-ok">'+s.grade+' pts</span>':'<span class="badge b-warn">Pending</span>')+'</td>'+
+          '<td>'+(s.isGraded?'<span style="font-size:.75rem;color:var(--muted);">Graded</span>':'<button class="action-btn" onclick="gradeSubmission(\''+s.id+'\')">Grade</button>')+'</td></tr>';
+      }).join('')+
+      '</tbody></table>';
+  }catch(e){document.getElementById('sub-list').innerHTML='<p class="empty">Error loading.</p>';}
+}
+
+async function gradeSubmission(submissionId){
+  var grade=prompt('Enter grade (number):');
+  if(grade===null||grade==='') return;
+  var feedback=prompt('Enter feedback for student:');
+  if(feedback===null) feedback='';
+  try{
+    var r=await fetch('/Assignment/Grade',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({submissionId:submissionId,grade:parseFloat(grade),feedback:feedback})});
+    if(r.ok){alert('✅ Graded successfully!');document.getElementById('sub-panel').classList.remove('open');}
+    else alert('Failed to grade.');
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ─── Face Attendance ────────────────────────────────────────────────────────
+var faceStream=null;
+
+function startFaceScan(){
+  var subject=document.getElementById('face-subject').value.trim();
+  if(!subject){alert('Please enter subject name first.');return;}
+  document.getElementById('face-cam-wrap').removeAttribute('hidden');
+  document.getElementById('face-capture-btn').style.display='block';
+  document.getElementById('face-start-btn').style.display='none';
+  document.getElementById('face-date').value=document.getElementById('face-date').value||new Date().toISOString().split('T')[0];
+  navigator.mediaDevices.getUserMedia({video:true}).then(function(stream){
+    faceStream=stream;
+    document.getElementById('face-webcam').srcObject=stream;
+  }).catch(function(){alert('Camera access denied.');});
+}
+
+async function captureFaceScan(){
+  var subject=document.getElementById('face-subject').value.trim();
+  var date=document.getElementById('face-date').value;
+  if(!subject||!date){alert('Please fill subject and date.');return;}
+  document.getElementById('face-scan-overlay').style.display='flex';
+  document.getElementById('face-capture-btn').disabled=true;
+  document.getElementById('face-capture-btn').textContent='🔍 Scanning...';
+  var video=document.getElementById('face-webcam');
+  var canvas=document.createElement('canvas');
+  canvas.width=640;canvas.height=480;
+  canvas.getContext('2d').drawImage(video,0,0,640,480);
+  var frame=canvas.toDataURL('image/jpeg',0.8);
+  try{
+    var r=await fetch('/FaceAttendance/Scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({frame:frame,subjectId:subject,date:date})});
+    if(r.ok){
+      var results=await r.json();
+      if(faceStream) faceStream.getTracks().forEach(function(t){t.stop();});
+      document.getElementById('face-cam-wrap').setAttribute('hidden','');
+      document.getElementById('face-start-btn').style.display='block';
+      document.getElementById('face-capture-btn').style.display='none';
+      var present=results.filter(function(r){return r.status==='Present';}).length;
+      var absent=results.filter(function(r){return r.status==='Absent';}).length;
+      document.getElementById('face-results').innerHTML=
+        '<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:14px;margin-bottom:12px;">'+
+        '<div style="font-weight:700;color:#4ade80;margin-bottom:8px;">✅ Attendance marked for '+results.length+' students — '+present+' Present, '+absent+' Absent</div>'+
+        '</div>'+
+        '<table class="dtable"><thead><tr><th>Student</th><th>Roll No</th><th>Match Score</th><th>Status</th></tr></thead><tbody>'+
+        results.map(function(r){
+          return '<tr><td style="font-weight:600;">'+r.studentName+'</td><td>'+r.rollNo+'</td>'+
+            '<td><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;">'+
+            '<div style="width:'+Math.min(r.similarity,100)+'%;height:100%;background:'+(r.similarity>=45?'#22c55e':'#ef4444')+'"></div></div>'+
+            '<span style="font-size:.78rem;color:'+(r.similarity>=45?'#4ade80':'#f87171')+';">'+r.similarity+'%</span></div></td>'+
+            '<td><span class="badge '+(r.status==='Present'?'b-present':'b-absent')+'">'+r.status+'</span></td></tr>';
+        }).join('')+
+        '</tbody></table>';
+      var r2=await fetch('/Teacher/GetAllAttendance');
+      if(r2.ok) allAtt=await r2.json();
+      renderAttRecords();renderStudentsTable();renderAtRiskPreview();renderAtRiskTable();
+    }else{alert('Face scan failed. Try again.');}
+  }catch(e){alert('Error: '+e.message);}
+  document.getElementById('face-scan-overlay').style.display='none';
+  document.getElementById('face-capture-btn').disabled=false;
+  document.getElementById('face-capture-btn').textContent='✅ Take Scan & Mark Attendance';
+}
+
+// ─── Class Control (face attendance section) ───────────────────────────────
+var classInterval=null;
+
+// FIX #3: scanFrame was referenced but never defined — added a proper implementation
+async function scanFrame(){
+  var subject=document.getElementById('face-subject').value.trim();
+  var date=document.getElementById('face-date').value||new Date().toISOString().split('T')[0];
+  if(!subject) return;
+  var video=document.getElementById('face-webcam');
+  if(!video||!video.srcObject) return;
+  var canvas=document.createElement('canvas');
+  canvas.width=640;canvas.height=480;
+  canvas.getContext('2d').drawImage(video,0,0,640,480);
+  var frame=canvas.toDataURL('image/jpeg',0.7);
+  try{
+    var r=await fetch('/FaceAttendance/Scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({frame:frame,subjectId:subject,date:date})});
+    if(r.ok){
+      var results=await r.json();
+      console.log('Auto-scan: ',results.length,' students detected');
+    }
+  }catch(e){console.warn('Auto-scan error:',e);}
+}
+
+function startClass(){
+  var subject=document.getElementById('face-subject').value.trim();
+  if(!subject){alert('Please enter a subject first.');return;}
+  // Start camera if not already running
+  if(!faceStream){
+    navigator.mediaDevices.getUserMedia({video:true}).then(function(stream){
+      faceStream=stream;
+      document.getElementById('face-webcam').srcObject=stream;
+      document.getElementById('face-cam-wrap').removeAttribute('hidden');
+    }).catch(function(){alert('Camera access denied.');return;});
+  }
+  if(classInterval) clearInterval(classInterval);
+  classInterval=setInterval(scanFrame,5000);
+  alert('✅ Class started — auto-scanning every 5 seconds');
+}
+
+// FIX #2: endClass was missing entirely — this caused a ReferenceError on click
+function endClass(){
+  if(classInterval){
+    clearInterval(classInterval);
+    classInterval=null;
+  }
+  if(faceStream){
+    faceStream.getTracks().forEach(function(t){t.stop();});
+    faceStream=null;
+  }
+  document.getElementById('face-cam-wrap').setAttribute('hidden','');
+  document.getElementById('face-start-btn').style.display='block';
+  document.getElementById('face-capture-btn').style.display='none';
+  alert('⏹ Class ended');
+}
+
+// ─── Live Class (dashboard) ────────────────────────────────────────────────
+// ── Find these functions in your Teacher Dashboard JS and REPLACE them ──
+
+let currentSessionId = null;
+
+// On page load, check if a session is already running
+fetch('/LiveClass/GetActiveSession').then(r=>r.json()).then(d=>{
+  if(d.isLive){
+    currentSessionId = d.sessionId;
+    document.getElementById('live-status').textContent = '🟢 Class LIVE';
+    document.getElementById('live-status').style.color = '#22c55e';
+    document.getElementById('join-btn').style.display = 'block';
+  }
+});
+
+async function startLiveClass() {
+  const subject  = document.getElementById('live-subject').value.trim();
+  const duration = parseInt(document.getElementById('durationInput')?.value || '60');
+
+  if (!subject) { alert('Enter subject name first'); return; }
+
+  const res  = await fetch('/LiveClass/StartClass', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subject, durationMinutes: duration })
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    currentSessionId = data.sessionId;
+    document.getElementById('live-status').textContent = '🟢 Class LIVE';
+    document.getElementById('live-status').style.color = '#22c55e';
+    document.getElementById('join-btn').style.display = 'block';
+    alert('✅ Class started! Students who attend 80%+ will be auto-marked Present.');
+  }
+}
+
+async function joinLiveMeeting() {
+  window.open('/LiveClass/Index', '_blank');
+}
+
+async function endLiveClass() {
+  if (!currentSessionId) { alert('No active session'); return; }
+
+  const res  = await fetch('/LiveClass/EndClass', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: currentSessionId })
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    currentSessionId = null;
+    document.getElementById('live-status').textContent = '🔴 Not Live';
+    document.getElementById('live-status').style.color = '#ef4444';
+    document.getElementById('join-btn').style.display = 'none';
+    alert('✅ Class ended! Eligible students have been auto-marked Present.');
+  }
+}
+
+// ─── Timetable Logic ───────────────────────────────────────────────────────
+let currentTimetable = [];
+let currentTtSection = "";
+
+async function loadSectionTimetable() {
+  const sec = document.getElementById("tt-section-select").value;
+  if(!sec){ alert('Please select a section.'); return; }
+  currentTtSection = sec;
+  document.getElementById("lbl-tt-section").innerText = sec;
+  document.getElementById("timetable-builder").style.display = 'block';
+  
+  const res = await fetch(`/Timetable/Get?section=${sec}`);
+  if(res.ok) {
+    currentTimetable = await res.json();
+    renderTimetableBuilder();
+  } else {
+    alert("Could not load timetable.");
+  }
+}
+
+function renderTimetableBuilder() {
+  const tbody = document.getElementById("tt-tbody");
+  tbody.innerHTML = "";
+  if(currentTimetable.length === 0){
+     tbody.innerHTML = `<tr><td colspan="7" class="empty">No classes scheduled yet. Add one!</td></tr>`;
+     return;
+  }
+  
+  const daysOrder = { "Monday":1, "Tuesday":2, "Wednesday":3, "Thursday":4, "Friday":5 };
+  currentTimetable.sort((a,b) => (daysOrder[a.dayOfWeek] || 99) - (daysOrder[b.dayOfWeek] || 99) || a.startTime.localeCompare(b.startTime));
+
+  currentTimetable.forEach((entry, index) => {
+     const tr = document.createElement("tr");
+     tr.innerHTML = `
+        <td>
+           <select class="t-input" onchange="updateTt(${index}, 'dayOfWeek', this.value)">
+              <option value="Monday" ${entry.dayOfWeek==='Monday'?'selected':''}>Monday</option>
+              <option value="Tuesday" ${entry.dayOfWeek==='Tuesday'?'selected':''}>Tuesday</option>
+              <option value="Wednesday" ${entry.dayOfWeek==='Wednesday'?'selected':''}>Wednesday</option>
+              <option value="Thursday" ${entry.dayOfWeek==='Thursday'?'selected':''}>Thursday</option>
+              <option value="Friday" ${entry.dayOfWeek==='Friday'?'selected':''}>Friday</option>
+           </select>
+        </td>
+        <td><input type="time" class="t-input" value="${entry.startTime}" onchange="updateTt(${index}, 'startTime', this.value)"></td>
+        <td><input type="time" class="t-input" value="${entry.endTime}" onchange="updateTt(${index}, 'endTime', this.value)"></td>
+        <td><input type="text" class="t-input" value="${entry.subject}" onchange="updateTt(${index}, 'subject', this.value)" placeholder="Subject (e.g. DSA)"></td>
+        <td><input type="text" class="t-input" value="${entry.room}" onchange="updateTt(${index}, 'room', this.value)" placeholder="Room"></td>
+        <td><input type="text" class="t-input" value="${entry.teacherName}" onchange="updateTt(${index}, 'teacherName', this.value)" placeholder="Prof Name"></td>
+        <td><button class="action-btn" style="color:#ef4444;" onclick="deleteTt(${index})">Delete</button></td>
+     `;
+     tbody.appendChild(tr);
+  });
+}
+
+function addTimetableRow() {
+  currentTimetable.push({ dayOfWeek: "Monday", startTime: "09:00", endTime: "10:00", subject: "", room: "", teacherName: "" });
+  renderTimetableBuilder();
+}
+
+function updateTt(index, field, val) {
+  currentTimetable[index][field] = val;
+}
+
+function deleteTt(index) {
+  currentTimetable.splice(index, 1);
+  renderTimetableBuilder();
+}
+
+async function saveSectionTimetable() {
+  if(!currentTtSection) return;
+  for(let m of currentTimetable) {
+      if(!m.subject || !m.startTime || !m.endTime) {
+          alert("All entries must have a Subject, Start Time, and End Time.");
+          return;
+      }
+  }
+  
+  const res = await fetch(`/Timetable/Save?section=${currentTtSection}`, {
+     method: 'POST',
+     headers: { 'Content-Type' : 'application/json' },
+     body: JSON.stringify(currentTimetable)
+  });
+  
+  if(res.ok) {
+     alert("✅ Timetable successfully saved to Firestore!");
+  } else {
+     alert("❌ Error saving timetable.");
+  }
+}
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>

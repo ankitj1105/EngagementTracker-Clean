@@ -1,0 +1,610 @@
+@{
+ViewData["Title"] = "Student Dashboard";
+var name = ViewBag.Name ?? "Student";
+var uid  = ViewBag.Uid  ?? "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Student Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --bg:#07070e;--surface:#0f0f18;--surface2:#13131e;--surface3:#1a1a28;
+      --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);
+      --purple:#7c3aed;--purple2:#4f46e5;--purple-glow:rgba(124,58,237,.15);
+      --text:#f0eeff;--muted:rgba(255,255,255,.4);--muted2:rgba(255,255,255,.18);
+      --green:#22c55e;--red:#ef4444;--amber:#f59e0b;--cyan:#06b6d4;
+    }
+    body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(--text);display:flex;min-height:100vh;}
+    .sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:100;}
+    .brand{padding:20px 16px 16px;border-bottom:1px solid var(--border);}
+    .brand-row{display:flex;align-items:center;gap:10px;}
+    .brand-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--purple),var(--purple2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;box-shadow:0 4px 14px rgba(124,58,237,.4);}
+    .brand-name{font-weight:800;font-size:.85rem;color:var(--text);}
+    .brand-sub{font-size:.65rem;color:var(--muted);margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
+    .nav{padding:8px 0;flex:1;overflow-y:auto;}
+    .nav a{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--muted);text-decoration:none;font-size:.82rem;border-left:3px solid transparent;transition:all .18s;}
+    .nav a:hover{color:var(--text);background:rgba(255,255,255,.03);}
+    .nav a.active{color:#a78bfa;background:var(--purple-glow);border-left-color:var(--purple);}
+    .nav-icon{font-size:.95rem;width:18px;text-align:center;}
+    .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.62rem;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;}
+    .nav-section{font-size:.62rem;font-weight:600;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;padding:14px 16px 4px;}
+    .sidebar-bottom{border-top:1px solid var(--border);padding:6px 0;}
+    .logout-btn{display:flex;align-items:center;gap:10px;padding:10px 16px;color:rgba(248,113,113,.55);text-decoration:none;font-size:.82rem;transition:all .2s;}
+    .logout-btn:hover{color:#f87171;background:rgba(248,113,113,.07);}
+    .main{margin-left:220px;padding:24px 28px;flex:1;min-height:100vh;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+    .topbar-left h4{font-weight:700;font-size:1.15rem;color:var(--text);}
+    .topbar-left p{font-size:.75rem;color:var(--muted);margin-top:2px;}
+    .topbar-right{display:flex;align-items:center;gap:12px;}
+    .notif-btn{width:36px;height:36px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;font-size:1rem;transition:all .2s;}
+    .notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1px solid var(--bg);}
+    .user-chip{background:var(--surface2);border:1px solid var(--border);border-radius:30px;padding:5px 14px 5px 6px;display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);cursor:pointer;}
+    .user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;}
+    .section{display:none;}
+    .section.active{display:block;}
+    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;}
+    .stat-card:hover{border-color:rgba(124,58,237,.25);transform:translateY(-2px);}
+    .stat-glow{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;filter:blur(30px);opacity:.25;}
+    .stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .stat-icon-wrap{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+    .stat-trend{font-size:.7rem;font-weight:600;padding:3px 8px;border-radius:20px;}
+    .trend-up{background:rgba(34,197,94,.12);color:#4ade80;}
+    .trend-down{background:rgba(239,68,68,.12);color:#f87171;}
+    .trend-neu{background:rgba(255,255,255,.06);color:var(--muted);}
+    .stat-value{font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;margin-bottom:4px;}
+    .stat-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+    .stat-sub{font-size:.72rem;color:var(--muted2);margin-top:5px;}
+    .stat-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:10px;overflow:hidden;}
+    .stat-bar-fill{height:100%;border-radius:2px;transition:width .8s ease;}
+    .alert-risk{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:12px 16px;color:#fca5a5;font-size:.82rem;display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:18px;}
+    .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .card-title{font-size:.85rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;}
+    .card-action{font-size:.72rem;color:#a78bfa;cursor:pointer;text-decoration:none;}
+    .row-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+    .row-item:last-child{border-bottom:none;}
+    .row-main{font-size:.83rem;font-weight:600;color:var(--text);}
+    .row-sub{font-size:.73rem;color:var(--muted);margin-top:2px;}
+    .badge{padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:600;}
+    .b-present{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.15);}
+    .b-absent{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.15);}
+    .b-late{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.15);}
+    .b-ok{background:rgba(34,197,94,.12);color:#4ade80;}
+    .b-warn{background:rgba(245,158,11,.12);color:#fbbf24;}
+    .b-fail{background:rgba(239,68,68,.12);color:#f87171;}
+    .b-grade-a{background:rgba(34,197,94,.12);color:#4ade80;}
+    .b-grade-b{background:rgba(6,182,212,.12);color:#22d3ee;}
+    .b-grade-c{background:rgba(245,158,11,.12);color:#fbbf24;}
+    .b-grade-f{background:rgba(239,68,68,.12);color:#f87171;}
+    .prog-wrap{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:5px;}
+    .prog-fill{height:100%;border-radius:3px;}
+    .dtable{width:100%;border-collapse:collapse;font-size:.81rem;}
+    .dtable th{padding:9px 12px;text-align:left;font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);}
+    .dtable td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text);}
+    .dtable tr:last-child td{border-bottom:none;}
+    .dtable tr:hover td{background:rgba(255,255,255,.015);}
+    .profile-hero{background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(79,70,229,.1));border:1px solid rgba(124,58,237,.2);border-radius:16px;padding:28px 24px;margin-bottom:18px;display:flex;align-items:center;gap:20px;}
+    .profile-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 8px 24px rgba(124,58,237,.4);}
+    .profile-info h3{font-size:1.15rem;font-weight:800;color:var(--text);}
+    .profile-info p{font-size:.78rem;color:var(--muted);margin-top:3px;}
+    .profile-tags{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+    .profile-tag{padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600;background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.2);}
+    .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .profile-field{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+    .profile-field label{font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:4px;}
+    .profile-field span{font-size:.85rem;color:var(--text);font-weight:500;}
+    .notif-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+    .notif-item:last-child{border-bottom:none;}
+    .notif-dot-icon{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+    .notif-content .notif-title{font-size:.82rem;font-weight:600;color:var(--text);}
+    .notif-content .notif-time{font-size:.7rem;color:var(--muted);margin-top:2px;}
+    .notif-content .notif-body{font-size:.78rem;color:var(--muted);margin-top:3px;}
+    .notif-unread .notif-title{color:#a78bfa;}
+    .tt-day{margin-bottom:18px;}
+    .tt-day-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px;}
+    .tt-slot{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;transition:border-color .2s;}
+    .tt-slot:hover{border-color:rgba(124,58,237,.25);}
+    .tt-slot.today-slot{border-color:rgba(124,58,237,.3);background:rgba(124,58,237,.06);}
+    .tt-time{font-size:.72rem;font-weight:700;color:var(--muted);width:90px;flex-shrink:0;}
+    .tt-color{width:4px;height:36px;border-radius:2px;flex-shrink:0;}
+    .tt-subject{font-size:.85rem;font-weight:600;color:var(--text);}
+    .tt-room{font-size:.72rem;color:var(--muted);margin-top:2px;}
+    .fc{color:var(--text)!important;}
+    .fc-theme-standard .fc-scrollgrid,.fc-theme-standard td,.fc-theme-standard th{border-color:var(--border)!important;}
+    .fc .fc-daygrid-day{background:var(--surface2);}
+    .fc .fc-col-header-cell{background:var(--surface);}
+    .fc .fc-col-header-cell-cushion{color:var(--muted);font-size:.72rem;font-weight:600;text-transform:uppercase;text-decoration:none;}
+    .fc .fc-daygrid-day-number{color:var(--muted);font-size:.78rem;text-decoration:none;}
+    .fc .fc-daygrid-day.fc-day-today{background:rgba(124,58,237,.1)!important;}
+    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{color:#a78bfa;font-weight:700;}
+    .fc-button{background:var(--surface2)!important;border:1px solid var(--border)!important;color:var(--text)!important;border-radius:8px!important;font-size:.76rem!important;padding:5px 11px!important;}
+    .fc-button:hover{background:var(--purple-glow)!important;border-color:var(--purple)!important;}
+    .fc-toolbar-title{font-size:.9rem!important;font-weight:700!important;color:var(--text)!important;}
+    .empty{color:var(--muted);font-size:.82rem;padding:16px 0;}
+    .loading{color:var(--muted2);font-size:.8rem;padding:20px 0;text-align:center;}
+    .submit-btn{background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:7px;color:#fff;padding:5px 12px;font-size:.75rem;cursor:pointer;transition:opacity .2s;}
+    .submit-btn:hover{opacity:.85;}
+    /* LIVE CLASS CARD */
+    .live-join-card{background:linear-gradient(135deg,#0f172a,#1e293b);padding:25px;border-radius:18px;margin-bottom:20px;box-shadow:0 10px 40px rgba(0,0,0,.5);border:1px solid rgba(34,197,94,.2);}
+    .live-header{display:flex;align-items:center;gap:8px;color:#22c55e;font-weight:bold;margin-bottom:10px;}
+    .live-dot{width:10px;height:10px;background:#22c55e;border-radius:50%;animation:pulse 1.5s infinite;}
+    @@keyframes pulse{0%{transform:scale(1);opacity:1;}50%{transform:scale(1.6);opacity:.5;}100%{transform:scale(1);opacity:1;}}
+    .live-join-card h2{color:white;margin:10px 0;font-size:1.3rem;}
+    .live-desc{color:#94a3b8;font-size:.85rem;margin-bottom:20px;}
+    .join-btn{background:linear-gradient(135deg,#6a11cb,#2575fc);color:white;padding:14px 28px;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .3s ease;box-shadow:0 4px 15px rgba(0,0,0,.3);}
+    .join-btn:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(0,0,0,.5);}
+
+    .chart-modal { background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px; padding: 18px; margin-top: 16px; display: none; }
+    .chart-modal.open { display: block; }
+    .chart-container { position: relative; height: 250px; width: 100%; border-radius: 8px; margin-top: 10px; }
+    .action-btn{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:7px;color:#a78bfa;padding:5px 12px;font-size:.75rem;cursor:pointer;transition:all .2s;}
+    .action-btn:hover{background:rgba(124,58,237,.25);}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="sidebar">
+  <div class="brand">
+    <div class="brand-row">
+      <div class="brand-icon">📊</div>
+      <div><div class="brand-name">EngageTracker</div><div class="brand-sub">Student Portal</div></div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Main</div>
+    <a href="#" class="active" data-sec="dashboard" onclick="goSec(this)"><span class="nav-icon">⚡</span>Dashboard</a>
+    <a href="#" data-sec="attendance" onclick="goSec(this)"><span class="nav-icon">📅</span>Attendance</a>
+    <a href="#" data-sec="marks" onclick="goSec(this)"><span class="nav-icon">🎓</span>Marks &amp; GPA</a>
+    <a href="#" data-sec="assignments" onclick="goSec(this)"><span class="nav-icon">📂</span>Assignments</a>
+    <a href="#" data-sec="engagement" onclick="goSec(this)"><span class="nav-icon">🎥</span>Engagement</a>
+    <a href="#" data-sec="timetable" onclick="goSec(this)"><span class="nav-icon">🗓️</span>Timetable</a>
+    <div class="nav-section">Other</div>
+    <a href="#" data-sec="notifications" onclick="goSec(this)"><span class="nav-icon">🔔</span>Notifications<span class="nav-badge" id="notif-count">3</span></a>
+    <a href="#" data-sec="profile" onclick="goSec(this)"><span class="nav-icon">👤</span>My Profile</a>
+    <a href="/Quiz" target="_blank"><span class="nav-icon">🎮</span>Live Quiz</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <a class="logout-btn" href="/Auth/Logout"><span class="nav-icon">🚪</span>Logout</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h4 id="page-title">Dashboard</h4>
+      <p id="page-sub">Welcome back, @name 👋</p>
+    </div>
+    <div class="topbar-right">
+      <div class="notif-btn" onclick="goSecById('notifications')">🔔<div class="notif-dot"></div></div>
+      <div class="user-chip" onclick="goSecById('profile')">
+        <div class="user-avatar">@name[0]</div>@name
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE CLASS CARD — hidden until a class goes live -->
+  <div class="live-join-card" id="live-join-card" style="display:none;">
+    <div class="live-header">
+      <span class="live-dot"></span>
+      <span>LIVE CLASS</span>
+    </div>
+    <h2 id="live-subject-text">Subject: --</h2>
+    <p class="live-desc">A class is currently in progress. Join now to mark your attendance.</p>
+    <button onclick="joinLiveClass()" class="join-btn">🎥 Join Live Class</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="sec-dashboard" class="section active">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-glow" style="background:#7c3aed;"></div><div class="stat-top"><div class="stat-icon-wrap" style="background:rgba(124,58,237,.15);">📅</div><span class="stat-trend trend-neu" id="att-trend">--</span></div><div class="stat-value" id="s-att">--%</div><div class="stat-label">Avg Attendance</div><div class="stat-sub">across all subjects</div><div class="stat-bar"><div class="stat-bar-fill" id="att-bar" style="width:0%;background:linear-gradient(90deg,#7c3aed,#4f46e5);"></div></div></div>
+      <div class="stat-card"><div class="stat-glow" style="background:#06b6d4;"></div><div class="stat-top"><div class="stat-icon-wrap" style="background:rgba(6,182,212,.15);">🎓</div><span class="stat-trend trend-neu" id="gpa-trend">--</span></div><div class="stat-value" id="s-gpa">--</div><div class="stat-label">Overall GPA</div><div class="stat-sub">current semester</div><div class="stat-bar"><div class="stat-bar-fill" id="gpa-bar" style="width:0%;background:linear-gradient(90deg,#06b6d4,#0891b2);"></div></div></div>
+      <div class="stat-card"><div class="stat-glow" style="background:#22c55e;"></div><div class="stat-top"><div class="stat-icon-wrap" style="background:rgba(34,197,94,.15);">✅</div><span class="stat-trend trend-neu" id="pres-trend">--</span></div><div class="stat-value" id="s-pres">--/--</div><div class="stat-label">Classes Present</div><div class="stat-sub">out of total classes</div><div class="stat-bar"><div class="stat-bar-fill" id="pres-bar" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a);"></div></div></div>
+      <div class="stat-card"><div class="stat-glow" style="background:#f59e0b;"></div><div class="stat-top"><div class="stat-icon-wrap" style="background:rgba(245,158,11,.15);">📂</div><span class="stat-trend trend-neu" id="assign-trend">--</span></div><div class="stat-value" id="s-assign">--</div><div class="stat-label">Assignments</div><div class="stat-sub">pending submission</div><div class="stat-bar"><div class="stat-bar-fill" id="assign-bar" style="width:0%;background:linear-gradient(90deg,#f59e0b,#d97706);"></div></div></div>
+    </div>
+    <div id="risk-banner" class="alert-risk" style="display:none">⚠️ <strong>Low Attendance Warning!</strong> &nbsp;Your attendance is below 75%.</div>
+    <div class="two-col">
+      <div class="card"><div class="card-head"><span class="card-title">📅 Recent Attendance</span><a class="card-action" onclick="goSecById('attendance')">View all →</a></div><div id="d-att"><div class="loading">Loading...</div></div></div>
+      <div class="card"><div class="card-head"><span class="card-title">🎓 Subject-wise GPA</span><a class="card-action" onclick="goSecById('marks')">View all →</a></div><div id="d-gpa"><div class="loading">Loading...</div></div></div>
+    </div>
+    <div class="two-col">
+      <div class="card"><div class="card-head"><span class="card-title">🗓️ Today's Classes</span><a class="card-action" onclick="goSecById('timetable')">Full timetable →</a></div><div id="d-today"></div></div>
+      <div class="card"><div class="card-head"><span class="card-title">📂 Pending Assignments</span><a class="card-action" onclick="goSecById('assignments')">View all →</a></div><div id="d-assign-preview"><div class="loading">Loading...</div></div></div>
+    </div>
+  </div>
+
+  <!-- ATTENDANCE -->
+  <div id="sec-attendance" class="section">
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-head"><span class="card-title">📅 Attendance Calendar</span></div>
+      <div style="font-size:.73rem;color:var(--muted);margin-bottom:14px;display:flex;gap:16px;">
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;margin-right:5px;"></span>Present</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ef4444;margin-right:5px;"></span>Absent</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f59e0b;margin-right:5px;"></span>Late</span>
+      </div>
+      <div id="calendar"></div>
+    </div>
+    <div class="card"><div class="card-head"><span class="card-title">📊 Subject-wise Summary</span></div><div id="att-summary"><div class="loading">Loading...</div></div></div>
+  </div>
+
+  <!-- MARKS -->
+  <div id="sec-marks" class="section">
+    <div class="card"><div class="card-head"><span class="card-title">🎓 Marks &amp; GPA Detail</span></div><div id="marks-detail"><div class="loading">Loading...</div></div></div>
+  </div>
+
+  <!-- ASSIGNMENTS -->
+  <div id="sec-assignments" class="section">
+    <div class="card"><div class="card-head"><span class="card-title">📂 My Assignments</span></div><div id="assign-list"><div class="loading">Loading...</div></div></div>
+  </div>
+
+  <!-- TIMETABLE -->
+  <div id="sec-timetable" class="section">
+    <div class="card"><div class="card-head"><span class="card-title">🗓️ Weekly Timetable</span></div><div id="timetable-body"></div></div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div id="sec-notifications" class="section">
+    <div class="card"><div class="card-head"><span class="card-title">🔔 Notifications</span><span class="card-action" onclick="clearNotifs()">Mark all read</span></div><div id="notif-list"></div></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="sec-profile" class="section">
+    <div class="profile-hero">
+      <img id="pf-photo" src="" style="width:72px;height:72px;border-radius:50%;object-fit:cover;" />
+      <input type="file" id="photoInput" />
+      <button type="button" onclick="uploadPhoto()">Upload Photo</button>
+      <div class="profile-info">
+        <h3 id="pf-name">@name</h3>
+        <p id="pf-department">--</p>
+        <div class="profile-tags">
+          <span class="profile-tag" id="pf-role">--</span>
+          <span class="profile-tag">Semester 6</span>
+          <span class="profile-tag" id="pf-section">--</span>
+        </div>
+      </div>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-field"><label>Full Name</label><span id="pf-name2">@name</span></div>
+      <div class="profile-field"><label>Role</label><span id="pf-role2">--</span></div>
+      <div class="profile-field"><label>University</label><span>GLA University, Mathura</span></div>
+      <div class="profile-field"><label>Programme</label><span id="pf-department2">--</span></div>
+      <div class="profile-field"><label>Avg Attendance</label><span id="pf-att">--%</span></div>
+      <div class="profile-field"><label>Overall GPA</label><span id="pf-gpa">--</span></div>
+    </div>
+  </div>
+
+  <!-- ENGAGEMENT -->
+  <div id="sec-engagement" class="section">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head"><span class="card-title">🎥 Live Webcam Feed</span></div>
+        <div style="position:relative;border-radius:10px;overflow:hidden;background:#000;margin-bottom:12px;">
+          <video id="webcam" autoplay playsinline style="width:100%;border-radius:10px;display:block;"></video>
+          <canvas id="canvas" style="display:none;"></canvas>
+          <div id="face-indicator" style="position:absolute;top:10px;right:10px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:700;background:rgba(0,0,0,.6);color:#fff;">Initializing...</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button id="start-btn" onclick="startEngagement()" style="flex:1;padding:.7rem;background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;border-radius:9px;color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;">▶ Start Session</button>
+          <button id="stop-btn" onclick="stopEngagement()" style="flex:1;padding:.7rem;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:9px;color:#f87171;font-size:.85rem;font-weight:700;cursor:pointer;" disabled>⏹ Stop</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">📊 Live Engagement Score</span></div>
+        <div style="text-align:center;padding:20px 0;">
+          <div style="position:relative;display:inline-block;">
+            <svg width="160" height="160" viewBox="0 0 160 160">
+              <circle cx="80" cy="80" r="65" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="12"/>
+              <circle id="score-ring" cx="80" cy="80" r="65" fill="none" stroke="#7c3aed" stroke-width="12" stroke-dasharray="408" stroke-dashoffset="408" stroke-linecap="round" transform="rotate(-90 80 80)" style="transition:stroke-dashoffset .5s ease,stroke .5s ease;"/>
+            </svg>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+              <div id="score-num" style="font-size:2.2rem;font-weight:800;color:var(--text);">50</div>
+              <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Score</div>
+            </div>
+          </div>
+          <div id="score-label" style="margin-top:10px;font-size:.85rem;font-weight:600;color:#a78bfa;">Ready to start</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;">
+          <div style="background:var(--surface2);border-radius:10px;padding:10px;text-align:center;"><div id="stat-detected" style="font-size:1.2rem;font-weight:800;color:#4ade80;">--</div><div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;">Detected</div></div>
+          <div style="background:var(--surface2);border-radius:10px;padding:10px;text-align:center;"><div id="stat-missed" style="font-size:1.2rem;font-weight:800;color:#f87171;">--</div><div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;">Missed</div></div>
+          <div style="background:var(--surface2);border-radius:10px;padding:10px;text-align:center;"><div id="stat-checks" style="font-size:1.2rem;font-weight:800;color:#a78bfa;">0</div><div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;">Checks</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">📈 Session History</span></div>
+      <div id="engagement-history"><div class="loading">Loading...</div></div>
+      <div class="chart-modal" id="eng-chart-panel">
+        <div class="card-head">
+          <span class="card-title" id="eng-chart-title">Session Graph</span>
+          <span class="card-action" onclick="document.getElementById('eng-chart-panel').classList.remove('open')" style="color:#a78bfa; cursor:pointer; font-size:.72rem;">✕ Close</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="eng-chart-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+  var attData=[],marksData=[],assignments=[],mySubmissions=[],calInit=false;
+  var pageTitles={dashboard:'Dashboard',attendance:'My Attendance',engagement:'Engagement Tracker',marks:'Marks & GPA',assignments:'Assignments',timetable:'Timetable',notifications:'Notifications',profile:'My Profile'};
+  var pageSubs={dashboard:'Welcome back, @name 👋',attendance:'Track your class attendance',engagement:'Live face detection & scoring',marks:'View your academic performance',assignments:'View and submit assignments',timetable:'Your weekly class schedule',notifications:'Stay updated',profile:'Your academic profile'};
+
+  function goSec(el){event.preventDefault();switchSec(el.dataset.sec);document.querySelectorAll('.nav a').forEach(function(a){a.classList.remove('active');});el.classList.add('active');}
+  function goSecById(id){switchSec(id);document.querySelectorAll('.nav a').forEach(function(a){a.classList.remove('active');if(a.dataset.sec===id)a.classList.add('active');});}
+  function switchSec(id){document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});document.getElementById('sec-'+id).classList.add('active');document.getElementById('page-title').textContent=pageTitles[id]||id;document.getElementById('page-sub').textContent=pageSubs[id]||'';if(id==='attendance'&&!calInit)initCal();}
+  function gradeClass(g){return g==='A+'||g==='A'?'b-grade-a':g==='B+'||g==='B'?'b-grade-b':g==='C'?'b-grade-c':'b-grade-f';}
+
+  // ── LIVE CLASS ───────────────────────────────────────────────────────────────
+
+  // FIX: single definition of checkLiveClass — polls /LiveClass/Status
+  // Previous code had two conflicting definitions and called /FaceAttendance/GetLiveClass
+  async function checkLiveClass(){
+    try{
+      var res  = await fetch('/LiveClass/Status');
+      var data = await res.json();           // always valid JSON now
+      var card = document.getElementById('live-join-card');
+      if(data.isLive && data.link){
+        document.getElementById('live-subject-text').textContent = 'Subject: ' + (data.subject || 'Live Class');
+        card.style.display = 'block';
+      }else{
+        card.style.display = 'none';
+      }
+    }catch(e){
+      console.warn('Live class check failed:', e);
+    }
+  }
+
+  // FIX: joinLiveClass now opens the local Live Class page
+  async function joinLiveClass(){
+    window.location.href = '/LiveClass/Index';
+  }
+
+  // Poll every 5 seconds — card appears automatically when teacher starts class
+  checkLiveClass();
+  setInterval(checkLiveClass, 5000);
+
+  // ── ENGAGEMENT ───────────────────────────────────────────────────────────────
+  var engagementActive=false, engagementInterval=null;
+  var sessionId='session_'+Date.now();
+  var currentScore=50, totalDetected=0, totalMissed=0, totalChecks=0;
+  var stream=null;
+
+  async function startEngagement(){
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({video:true});
+      document.getElementById('webcam').srcObject=stream;
+      engagementActive=true;
+      sessionId='session_'+Date.now();
+      currentScore=50;totalDetected=0;totalMissed=0;totalChecks=0;
+      document.getElementById('start-btn').disabled=true;
+      document.getElementById('stop-btn').disabled=false;
+      document.getElementById('score-label').textContent='Session active...';
+      engagementInterval=setInterval(captureAndAnalyze,5000);
+      captureAndAnalyze();
+    }catch(e){alert('Camera access denied. Please allow camera permissions.');}
+  }
+
+  function stopEngagement(){
+    engagementActive=false;
+    clearInterval(engagementInterval);
+    if(stream) stream.getTracks().forEach(function(t){t.stop();});
+    document.getElementById('webcam').srcObject=null;
+    document.getElementById('start-btn').disabled=false;
+    document.getElementById('stop-btn').disabled=true;
+    document.getElementById('face-indicator').textContent='Session ended';
+    document.getElementById('face-indicator').style.background='rgba(0,0,0,.6)';
+    document.getElementById('score-label').textContent='Session ended — score saved!';
+    loadEngagementHistory();
+  }
+
+  async function captureAndAnalyze(){
+    if(!engagementActive) return;
+    try{
+      var video=document.getElementById('webcam');
+      var canvas=document.getElementById('canvas');
+      canvas.width=320;canvas.height=240;
+      canvas.getContext('2d').drawImage(video,0,0,320,240);
+      var frame=canvas.toDataURL('image/jpeg',0.7);
+      var r=await fetch('/Engagement/Analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({frame:frame,sessionId:sessionId,currentScore:currentScore})});
+      if(r.ok){var data=await r.json();currentScore=data.score;totalChecks++;if(data.faceDetected)totalDetected++;else totalMissed++;updateScoreUI(data.score,data.faceDetected);}
+    }catch(e){}
+  }
+
+  function updateScoreUI(score,faceDetected){
+    document.getElementById('score-num').textContent=score;
+    var ring=document.getElementById('score-ring');
+    var offset=408-(408*score/100);
+    ring.style.strokeDashoffset=offset;
+    var color=score>=70?'#22c55e':score>=40?'#f59e0b':'#ef4444';
+    ring.style.stroke=color;
+    document.getElementById('score-num').style.color=color;
+    var ind=document.getElementById('face-indicator');
+    if(faceDetected){ind.textContent='✅ Face Detected';ind.style.background='rgba(34,197,94,.4)';}
+    else{ind.textContent='❌ No Face';ind.style.background='rgba(239,68,68,.4)';}
+    document.getElementById('stat-detected').textContent=totalDetected;
+    document.getElementById('stat-missed').textContent=totalMissed;
+    document.getElementById('stat-checks').textContent=totalChecks;
+    document.getElementById('score-label').textContent=score>=70?'🔥 Highly Engaged':score>=40?'📈 Moderately Engaged':'⚠️ Low Engagement';
+  }
+
+  async function loadEngagementHistory(){
+    try{
+      var r=await fetch('/Engagement/GetStudentSessions');
+      if(!r.ok) return;
+      var sessions=await r.json();
+      document.getElementById('engagement-history').innerHTML=sessions.length===0?'<p class="empty">No sessions yet. Start a session above!</p>':'<table class="dtable"><thead><tr><th>Class Name</th><th>Start Time</th><th>Duration</th><th>Avg Score</th><th>Action</th></tr></thead><tbody>'+sessions.slice(0,10).map(function(s){return '<tr><td style="font-weight:600;">'+s.className+' '+(s.isLiveClass?'<span style="font-size:0.6rem;padding:2px 5px" class="badge b-present">Live</span>':'')+'</td><td style="color:var(--muted);font-size:0.75rem;">'+s.timestamp+'</td><td style="color:var(--muted);font-size:0.75rem;">'+s.duration+'</td><td><strong style="color:'+(s.averageScore>=70?'#4ade80':s.averageScore>=40?'#fbbf24':'#f87171')+';">'+s.averageScore+'</strong></td><td><button class="action-btn" onclick="viewSessionGraph(\''+s.sessionId+'\',\''+s.timestamp+'\')">View Graph</button></td></tr>';}).join('')+'</tbody></table>';
+    }catch(e){}
+  }
+
+  var engChart = null;
+  async function viewSessionGraph(sessionId, ts) {
+      document.getElementById('eng-chart-title').textContent = 'Graph for: ' + ts;
+      document.getElementById('eng-chart-panel').classList.add('open');
+      try {
+          var r = await fetch('/Engagement/GetSessionData?sessionId=' + sessionId);
+          if (!r.ok) return;
+          var data = await r.json();
+          var labels = data.map(d => new Date(d.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+          var scores = data.map(d => d.score);
+          
+          if (engChart) engChart.destroy();
+          var ctx = document.getElementById('eng-chart-canvas').getContext('2d');
+          engChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Engagement Score', data: scores, borderColor: '#a78bfa', backgroundColor: 'rgba(167, 139, 250, 0.2)', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, ticks: { color: '#888' }, grid: { color: '#2a2a4a' } }, x: { ticks: { color: '#888', maxTicksLimit: 5 }, grid: { display: false } } }, plugins: { legend: { display: false } } }
+        });
+      } catch(e){}
+  }
+
+  // ── DATA LOADING ─────────────────────────────────────────────────────────────
+  async function loadAll(){
+    try{var r=await fetch('/Attendance/GetMyAttendance');if(r.ok)attData=await r.json();}catch(e){}
+    try{var r2=await fetch('/Marks/GetMyMarks');if(r2.ok)marksData=await r2.json();}catch(e){}
+    try{var r3=await fetch('/Assignment/GetAll');if(r3.ok)assignments=await r3.json();}catch(e){}
+    try{var r4=await fetch('/Assignment/GetMySubmissions');if(r4.ok)mySubmissions=await r4.json();}catch(e){}
+    await loadMyTimetable();
+    render();
+  }
+
+  function render(){
+    var total=attData.length,present=attData.filter(function(a){return a.status==='Present';}).length,late=attData.filter(function(a){return a.status==='Late';}).length;
+    var pct=total===0?0:Math.round((present+late)*100/total);
+    document.getElementById('s-att').textContent=pct+'%';
+    document.getElementById('s-pres').textContent=present+'/'+total;
+    document.getElementById('att-bar').style.width=pct+'%';
+    document.getElementById('att-trend').textContent=pct>=75?'✅ Good':'⚠ Low';
+    document.getElementById('att-trend').className='stat-trend '+(pct>=75?'trend-up':'trend-down');
+    document.getElementById('pf-att').textContent=pct+'%';
+    if(pct<75&&total>0)document.getElementById('risk-banner').style.display='flex';
+
+    if(marksData.length>0){
+      var avg=(marksData.reduce(function(s,m){return s+m.gpaPoints;},0)/marksData.length).toFixed(1);
+      document.getElementById('s-gpa').textContent=avg;
+      document.getElementById('gpa-bar').style.width=(avg/10*100)+'%';
+      document.getElementById('gpa-trend').textContent=avg>=7?'🔥 Great':avg>=5?'📈 OK':'📉 Low';
+      document.getElementById('gpa-trend').className='stat-trend '+(avg>=7?'trend-up':avg>=5?'trend-neu':'trend-down');
+      document.getElementById('pf-gpa').textContent=avg;
+    }
+
+    document.getElementById('pres-bar').style.width=(total===0?0:Math.round(present*100/total))+'%';
+    document.getElementById('pres-trend').textContent=total===0?'--':present+' classes';
+
+    var today=new Date().toISOString().split('T')[0];
+    var pending=assignments.filter(function(a){var sub=mySubmissions.find(function(s){return s.assignmentId===a.id;});return !sub&&a.dueDate>=today;}).length;
+    document.getElementById('s-assign').textContent=pending;
+    document.getElementById('assign-trend').textContent=pending===0?'✅ Done':'⏳ Pending';
+    document.getElementById('assign-trend').className='stat-trend '+(pending===0?'trend-up':'trend-down');
+
+    renderRecentAtt();renderSubjectGPA();renderAttSummary();renderMarks();renderAssignments();renderAssignPreview();renderTodayClasses();renderNotifs();renderTimetable();
+  }
+
+  function renderRecentAtt(){var rec=[].concat(attData).reverse().slice(0,5);document.getElementById('d-att').innerHTML=rec.length===0?'<p class="empty">No attendance records yet.</p>':rec.map(function(a){return '<div class="row-item"><div><div class="row-main">'+a.date+'</div><div class="row-sub">'+(a.subjectId||'—')+'</div></div><span class="badge b-'+a.status.toLowerCase()+'">'+a.status+'</span></div>';}).join('');}
+  function renderSubjectGPA(){var byS={};marksData.forEach(function(m){if(!byS[m.subjectName])byS[m.subjectName]=[];byS[m.subjectName].push(m.gpaPoints);});document.getElementById('d-gpa').innerHTML=Object.keys(byS).length===0?'<p class="empty">No marks recorded yet.</p>':Object.entries(byS).map(function(e){var avg=(e[1].reduce(function(a,b){return a+b;},0)/e[1].length).toFixed(1);return '<div class="row-item"><div class="row-main">'+e[0]+'</div><span class="badge '+(avg>=7?'b-grade-a':avg>=5?'b-grade-b':'b-grade-f')+'" style="padding:4px 12px;font-size:.73rem;font-weight:700;">GPA '+avg+'</span></div>';}).join('');}
+  function renderAttSummary(){var byS={};attData.forEach(function(a){if(!byS[a.subjectId])byS[a.subjectId]={p:0,ab:0,l:0,t:0};byS[a.subjectId].t++;if(a.status==='Present')byS[a.subjectId].p++;else if(a.status==='Absent')byS[a.subjectId].ab++;else if(a.status==='Late')byS[a.subjectId].l++;});document.getElementById('att-summary').innerHTML=Object.keys(byS).length===0?'<p class="empty">No records yet.</p>':'<table class="dtable"><thead><tr><th>Subject</th><th>Present</th><th>Absent</th><th>Late</th><th>Percentage</th><th>Status</th></tr></thead><tbody>'+Object.entries(byS).map(function(e){var s=e[1],pct=Math.round((s.p+s.l)*100/s.t);return '<tr><td style="font-weight:600;">'+e[0]+'</td><td><span class="badge b-present">'+s.p+'</span></td><td><span class="badge b-absent">'+s.ab+'</span></td><td><span class="badge b-late">'+s.l+'</span></td><td><strong>'+pct+'%</strong><div class="prog-wrap"><div class="prog-fill" style="width:'+pct+'%;background:'+(pct>=75?'#22c55e':'#ef4444')+'"></div></div></td><td><span class="badge '+(pct<75?'b-warn':'b-ok')+'">'+(pct<75?'⚠ Low':'✅ OK')+'</span></td></tr>';}).join('')+'</tbody></table>';}
+  function renderMarks(){document.getElementById('marks-detail').innerHTML=marksData.length===0?'<p class="empty">No marks recorded yet.</p>':'<table class="dtable"><thead><tr><th>Subject</th><th>Exam</th><th>Score</th><th>Max</th><th>%</th><th>Grade</th><th>GPA</th></tr></thead><tbody>'+marksData.map(function(m){var pct=m.maxScore>0?Math.round(m.score*100/m.maxScore):0;return '<tr><td style="font-weight:600;">'+m.subjectName+'</td><td style="color:var(--muted);">'+m.examType+'</td><td>'+m.score+'</td><td>'+m.maxScore+'</td><td>'+pct+'%</td><td><span class="badge '+gradeClass(m.grade)+'" style="padding:3px 9px;font-size:.7rem;font-weight:700;">'+m.grade+'</span></td><td><strong style="color:'+(m.gpaPoints>=7?'#4ade80':m.gpaPoints>=5?'#fbbf24':'#f87171')+';">'+m.gpaPoints+'</strong></td></tr>';}).join('')+'</tbody></table>';}
+  function renderAssignments(){var today=new Date().toISOString().split('T')[0];document.getElementById('assign-list').innerHTML=assignments.length===0?'<p class="empty">No assignments posted yet.</p>':'<table class="dtable"><thead><tr><th>Title</th><th>Subject</th><th>Due Date</th><th>Max Marks</th><th>Status</th><th>Grade</th><th>Action</th></tr></thead><tbody>'+assignments.map(function(a){var sub=mySubmissions.find(function(s){return s.assignmentId===a.id;});var isOverdue=a.dueDate<today;var status=sub?'<span class="badge b-ok">✅ Submitted</span>':isOverdue?'<span class="badge b-fail">❌ Overdue</span>':'<span class="badge b-warn">⏳ Pending</span>';var grade=sub&&sub.isGraded?'<strong style="color:#4ade80;">'+sub.grade+'/'+a.maxMarks+'</strong>':sub?'<span style="color:var(--muted);">Awaiting</span>':'<span style="color:var(--muted);">--</span>';var action=sub?'<span style="font-size:.75rem;color:var(--muted);">Submitted ✓</span>':isOverdue?'<span style="font-size:.75rem;color:#f87171;">Overdue</span>':'<button class="submit-btn" onclick="submitAssign(\''+a.id+'\')">Submit</button>';return '<tr><td style="font-weight:600;">'+a.title+'</td><td>'+a.subjectName+'</td><td style="color:'+(isOverdue&&!sub?'#f87171':'var(--muted)')+';">'+a.dueDate+'</td><td>'+a.maxMarks+'</td><td>'+status+'</td><td>'+grade+'</td><td>'+action+'</td></tr>';}).join('')+'</tbody></table>';}
+  function renderAssignPreview(){var today=new Date().toISOString().split('T')[0];var pending=assignments.filter(function(a){var sub=mySubmissions.find(function(s){return s.assignmentId===a.id;});return !sub&&a.dueDate>=today;});document.getElementById('d-assign-preview').innerHTML=pending.length===0?'<p class="empty" style="color:#4ade80;">✅ All assignments submitted!</p>':pending.slice(0,3).map(function(a){return '<div class="row-item"><div><div class="row-main">'+a.title+'</div><div class="row-sub">Due: '+a.dueDate+' · '+a.subjectName+'</div></div><button class="submit-btn" onclick="goSecById(\'assignments\')">Submit</button></div>';}).join('');}
+
+  function submitAssign(assignmentId){var link=prompt('Paste your assignment link (Google Drive, GitHub, etc.):');if(!link)return;var fname=prompt('Enter a name for your submission:');if(!fname)return;fetch('/Assignment/Submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({assignmentId:assignmentId,fileUrl:link,fileName:fname})}).then(function(r){if(r.ok){alert('✅ Submitted successfully!');loadAll();}else alert('❌ Failed to submit.');});}
+
+  var timetable={};
+  var days=['Monday','Tuesday','Wednesday','Thursday','Friday'];
+  var ttColors = ['#7c3aed','#06b6d4','#22c55e','#f59e0b','#ef4444'];
+
+  async function loadMyTimetable() {
+      try {
+          var res = await fetch('/Timetable/Get?section=@ViewBag.Section');
+          if (res.ok) {
+              var ttData = await res.json();
+              timetable = {};
+              days.forEach(d => timetable[d] = []);
+              
+              ttData.forEach((s, idx) => {
+                  if(!timetable[s.dayOfWeek]) timetable[s.dayOfWeek] = [];
+                  timetable[s.dayOfWeek].push({
+                      time: s.startTime + ' - ' + s.endTime,
+                      subject: s.subject,
+                      room: s.room + (s.teacherName ? ` (${s.teacherName})` : ''),
+                      color: ttColors[idx % ttColors.length]
+                  });
+              });
+              
+              // Render UI
+              var html='';
+              days.forEach(function(day){
+                 var slots=timetable[day]||[];
+                 if(slots.length > 0) {
+                     html+='<div class="tt-day"><div class="tt-day-label">'+day+'</div>';
+                     slots.forEach(function(s){
+                        html+='<div class="tt-slot"><div class="tt-time">'+s.time+'</div><div class="tt-color" style="background:'+s.color+'"></div><div><div class="tt-subject">'+s.subject+'</div><div class="tt-room">📍 '+s.room+'</div></div></div>';
+                     });
+                     html+='</div>';
+                 }
+              });
+              document.getElementById('timetable-body').innerHTML = html || '<p class="empty">No classes scheduled yet.</p>';
+              
+              // Render Today Preview
+              var dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+              var today=dayNames[new Date().getDay()];
+              var tslots=(timetable[today]||[]);
+              document.getElementById('d-today').innerHTML=tslots.length===0?'<p class="empty">No classes today 🎉</p>':tslots.map(function(s){return '<div class="tt-slot today-slot" style="margin-bottom:6px;"><div class="tt-time">'+s.time+'</div><div class="tt-color" style="background:'+s.color+'"></div><div><div class="tt-subject">'+s.subject+'</div><div class="tt-room">📍 '+s.room+'</div></div></div>';}).join('');
+          }
+      } catch(e) {}
+  }
+
+  function renderTimetable(){} // Replaced by dynamic loader
+  function renderTodayClasses(){} // Replaced by dynamic loader
+
+  var notifications=[{id:1,title:'Attendance Warning',body:'Your attendance in DBMS has dropped below 75%.',time:'2 hours ago',color:'#ef4444',read:false},{id:2,title:'Marks Updated',body:'Your Operating Systems midterm marks have been uploaded.',time:'Yesterday',color:'#7c3aed',read:false},{id:3,title:'Assignment Due',body:'Software Engineering assignment due this Friday.',time:'2 days ago',color:'#f59e0b',read:false},{id:4,title:'Class Rescheduled',body:'DBMS Lab moved to Thursday 2 PM.',time:'3 days ago',color:'#06b6d4',read:true}];
+  function renderNotifs(){var unread=notifications.filter(function(n){return !n.read;}).length;document.getElementById('notif-count').textContent=unread>0?unread:'';document.getElementById('notif-count').style.display=unread>0?'':'none';document.getElementById('notif-list').innerHTML=notifications.map(function(n){return '<div class="notif-item '+(n.read?'':'notif-unread')+'"><div class="notif-dot-icon" style="background:'+n.color+'"></div><div class="notif-content"><div class="notif-title">'+n.title+'</div><div class="notif-body">'+n.body+'</div><div class="notif-time">'+n.time+'</div></div></div>';}).join('');}
+  function clearNotifs(){notifications.forEach(function(n){n.read=true;});renderNotifs();var dot=document.querySelector('.notif-dot');if(dot)dot.style.display='none';}
+  function initCal(){calInit=true;var events=attData.map(function(a){return{title:a.status,start:a.date,backgroundColor:a.status==='Present'?'#16a34a':a.status==='Absent'?'#dc2626':'#d97706',borderColor:'transparent',textColor:'#fff'};});new FullCalendar.Calendar(document.getElementById('calendar'),{initialView:'dayGridMonth',height:380,events:events,headerToolbar:{left:'prev,next today',center:'title',right:''}}).render();}
+
+  async function loadProfile(){
+    try{
+      var res=await fetch('/Auth/GetProfile');
+      if(!res.ok) return;
+      var data=await res.json();
+      document.getElementById('pf-name').innerText=data.name;
+      document.getElementById('pf-name2').innerText=data.name;
+      document.getElementById('pf-role').innerText=data.role;
+      document.getElementById('pf-role2').innerText=data.role;
+      document.getElementById('pf-section').innerText='Section '+data.section;
+      document.getElementById('pf-department').innerText=data.department;
+      document.getElementById('pf-department2').innerText=data.department;
+      if(data.photoData) document.getElementById('pf-photo').src='data:image/jpeg;base64,'+data.photoData;
+    }catch(e){}
+  }
+
+  async function uploadPhoto(){
+    var fileInput=document.getElementById('photoInput');
+    var file=fileInput.files[0];
+    if(!file){alert('Select a file first');return;}
+    var reader=new FileReader();
+    reader.onload=async function(){
+      var base64=reader.result.split(',')[1];
+      var res=await fetch('/Auth/SavePhoto',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photoData:base64})});
+      if(res.ok){alert('Upload success ✅');location.reload();}else alert('Upload failed ❌');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  loadAll();
+  loadProfile();
+  loadEngagementHistory();
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+@{
+    ViewData["Title"] = "Mark Attendance";
+}
+
+<div style="padding:30px">
+
+    <h2 style="color:white;">📸 Auto Face Attendance</h2>
+
+    <input id="subjectInput" placeholder="Enter Subject"
+style="padding:10px; width:300px; margin-top:10px;" />
+
+    <br><br>
+
+    <button onclick="startCamera()"
+style="padding:12px 25px; background:#6c5ce7; color:white; border:none; border-radius:8px;">
+    🎥 Open Camera & Scan
+    </button>
+
+    <button onclick="startClass()"
+style="padding:12px 25px; background:#00b894; color:white; border:none; border-radius:8px;">
+    ▶ Start Class
+    </button>
+
+    <button onclick="endClass()"
+style="padding:12px 25px; background:#d63031; color:white; border:none; border-radius:8px;">
+    ■ End Class
+    </button>
+
+    <p id="status" style="margin-top:15px; color:lightgreen;"></p>
+
+    </div>
+    
+    <script>
+    let cameraRunning = false;
+
+async function startCamera() {
+    cameraRunning = true;
+    document.getElementById("status").innerText = "Camera started...";
+
+    setInterval(async () => {
+        if (!cameraRunning) return;
+
+        try {
+            await fetch('/FaceAttendance/Scan', { method: 'POST' });
+        } catch {
+            console.log("Scan error");
+        }
+    }, 5000);
+}
+
+async function startClass() {
+    const subject = document.getElementById("subjectInput").value;
+
+    const res = await fetch('/LiveClass/Start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject })
+    });
+
+    alert("Class Started");
+}
+
+async function endClass() {
+    await fetch('/LiveClass/End', { method: 'POST' });
+    alert("Class Ended");
+}
+</script>

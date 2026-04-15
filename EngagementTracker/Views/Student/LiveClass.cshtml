@@ -1,0 +1,523 @@
+@model EngagementTracker.Models.LiveClassViewModel
+@{
+    ViewData["Title"] = "Live Class";
+    Layout = null;
+    var role = ViewBag.Role ?? "student";
+    var isAlreadyMarked = Model?.IsAlreadyMarked ?? false;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Live Class – EngageTracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d1a; color: #fff; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
+
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px; background: #13132a; border-bottom: 1px solid #2a2a4a;
+  }
+  .top-bar h2 { font-size: 1.1rem; color: #a78bfa; }
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: #1a1a35; padding: 4px 14px; border-radius: 20px;
+    font-size: 0.8rem; border: 1px solid #3d3d6b;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 1.2s infinite; }
+  @@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .main-grid {
+    display: grid; grid-template-columns: 1fr 320px;
+    gap: 16px; padding: 16px; height: calc(100vh - 60px);
+  }
+
+  /* Jitsi iframe */
+  .jitsi-wrap {
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid #2a2a4a; background: #000; position: relative;
+  }
+  #jitsi-frame { width: 100%; height: 100%; border: none; }
+
+  /* Right panel */
+  .right-panel { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+
+  .card {
+    background: #13132a; border: 1px solid #2a2a4a;
+    border-radius: 12px; padding: 16px;
+  }
+  .card h3 { font-size: 0.85rem; color: #a78bfa; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* Attendance timer */
+  .timer-circle {
+    width: 100px; height: 100px; border-radius: 50%;
+    border: 4px solid #2a2a4a; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; margin: 0 auto 12px;
+    position: relative; background: #0d0d1a;
+  }
+  .timer-circle svg { position: absolute; top: -4px; left: -4px; transform: rotate(-90deg); }
+  .timer-circle circle { fill: none; stroke-width: 4; }
+  .timer-circle .bg-circle { stroke: #2a2a4a; }
+  .timer-circle .prog-circle { stroke: #a78bfa; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset .5s; stroke-linecap: round; }
+  #timer-pct  { font-size: 1.3rem; font-weight: 700; color: #fff; z-index: 1; }
+  #timer-text { font-size: 0.65rem; color: #888; z-index: 1; }
+
+  .progress-row { display: flex; justify-content: space-between; font-size: 0.75rem; color: #888; margin-bottom: 4px; }
+  .bar { height: 6px; background: #2a2a4a; border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg,#7c3aed,#a78bfa); width: 0%; transition: width .5s; border-radius: 3px; }
+
+  /* Marked banner */
+  .marked-banner {
+    display: none; background: linear-gradient(135deg,#166534,#15803d);
+    border: 1px solid #22c55e; border-radius: 10px; padding: 14px; text-align: center;
+  }
+  .marked-banner.show { display: block; }
+  .marked-banner .check { font-size: 1.8rem; }
+  .marked-banner p { font-size: 0.85rem; color: #bbf7d0; margin-top: 4px; }
+
+  /* Webcam card */
+  #webcam-video {
+    width: 100%; border-radius: 8px; background: #000;
+    display: block; max-height: 140px; object-fit: cover;
+  }
+  .score-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .score-num { font-size: 1.4rem; font-weight: 700; color: #a78bfa; }
+  .score-label { font-size: 0.7rem; color: #888; }
+  .eng-status { font-size: 0.75rem; padding: 2px 10px; border-radius: 10px; background: #1a2a1a; color: #22c55e; }
+
+  /* Not live state */
+  .not-live {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; color: #888; gap: 12px;
+  }
+  .not-live .icon { font-size: 3rem; }
+  .not-live p { font-size: 0.9rem; }
+
+  /* Summary Modal */
+  .summary-modal {
+    position: fixed; top:0; left:0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.85); z-index: 1000;
+    display: none; align-items: center; justify-content: center;
+  }
+  .summary-card {
+    background: #13132a; border: 1px solid #2a2a4a; border-radius: 16px;
+    padding: 30px; width: 500px; max-width: 90%; text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .summary-card h2 { color: #a78bfa; margin-bottom: 20px; font-size: 1.5rem; }
+  .summary-stats { display: flex; justify-content: space-around; margin-bottom: 24px; }
+  .summary-stat { background: #1a1a35; padding: 12px; border-radius: 12px; width: 30%; }
+  .summary-stat-num { font-size: 1.8rem; font-weight: 700; margin-bottom: 4px; }
+  .summary-stat-label { font-size: 0.75rem; color: #888; text-transform: uppercase; }
+  .chart-container { background: #0d0d1a; padding: 16px; border-radius: 12px; border: 1px solid #2a2a4a; margin-bottom: 20px;}
+  .btn-dashboard {
+    background: linear-gradient(135deg,#7c3aed,#4f46e5); color: #fff;
+    border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer;
+    font-weight: 600; text-decoration: none; display: inline-block;
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <h2>⚡ EngageTracker — Live Class</h2>
+  <div class="live-badge">
+    <div class="dot" id="live-dot" style="background:#ef4444"></div>
+    <span id="live-label">Checking...</span>
+  </div>
+  <a href="/Student/Dashboard" style="color:#a78bfa;font-size:.85rem;">← Dashboard</a>
+</div>
+
+<div class="main-grid">
+
+  <!-- LEFT: Jitsi -->
+  <div class="jitsi-wrap" id="jitsi-wrap">
+    <div class="not-live" id="not-live-msg">
+      <div class="icon">📡</div>
+      <p>No live class right now.</p>
+      <p style="font-size:.8rem">Check back when your teacher starts a class.</p>
+    </div>
+    <!-- Jitsi loads here -->
+    <div id="jitsi-container" style="width:100%;height:100%;display:none;"></div>
+  </div>
+
+  <!-- RIGHT: Status Cards -->
+  <div class="right-panel">
+
+    <!-- ALREADY MARKED BANNER (shown on page load if already marked) -->
+    <div class="marked-banner @(isAlreadyMarked ? "show" : "")" id="marked-banner">
+      <div class="check">✅</div>
+      <strong>Attendance Marked!</strong>
+      <p>You've been automatically marked <b>Present</b> for this class.</p>
+    </div>
+
+    <!-- ATTENDANCE PROGRESS CARD -->
+    <div class="card" id="attendance-card" style="display:none">
+      <h3>🎯 Auto Attendance</h3>
+      <div class="timer-circle">
+        <svg width="108" height="108" viewBox="0 0 108 108">
+          <circle class="bg-circle"   cx="54" cy="54" r="45"/>
+          <circle class="prog-circle" cx="54" cy="54" r="45" id="prog-circle"/>
+        </svg>
+        <span id="timer-pct">0%</span>
+        <span id="timer-text">Attendance</span>
+      </div>
+      <div class="progress-row">
+        <span>Time in class</span>
+        <span id="time-display">0 min</span>
+      </div>
+      <div class="bar"><div class="bar-fill" id="att-bar"></div></div>
+      <p style="font-size:.72rem;color:#888;margin-top:8px;text-align:center">
+        Need <b style="color:#a78bfa">80%</b> attendance to be auto-marked Present
+      </p>
+      <p id="class-subject" style="font-size:.78rem;color:#a78bfa;text-align:center;margin-top:6px"></p>
+    </div>
+
+    <!-- ENGAGEMENT TRACKING CARD -->
+    <div class="card" id="engagement-card" style="display:none">
+      <h3>📷 Live Engagement</h3>
+      <video id="webcam-video" autoplay muted playsinline></video>
+      <canvas id="capture-canvas" style="display:none" width="320" height="240"></canvas>
+      <div class="score-row">
+        <div>
+          <div class="score-num" id="eng-score">--</div>
+          <div class="score-label">Engagement Score</div>
+        </div>
+        <span class="eng-status" id="eng-status">Waiting...</span>
+      </div>
+    </div>
+
+    <!-- SESSION INFO -->
+    <div class="card" id="session-info-card" style="display:none">
+      <h3>📋 Session Info</h3>
+      <table style="width:100%;font-size:.8rem;border-collapse:collapse">
+        <tr><td style="color:#888;padding:4px 0">Subject</td><td id="info-subject" style="text-align:right;color:#fff"></td></tr>
+        <tr><td style="color:#888;padding:4px 0">Duration</td><td id="info-duration" style="text-align:right;color:#fff"></td></tr>
+        <tr><td style="color:#888;padding:4px 0">Threshold</td><td style="text-align:right;color:#a78bfa">80% attendance</td></tr>
+        <tr><td style="color:#888;padding:4px 0">Status</td><td id="info-status" style="text-align:right;color:#22c55e"></td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- SUMMARY MODAL -->
+<div class="summary-modal" id="summary-modal">
+  <div class="summary-card">
+    <h2>🎯 Class Summary</h2>
+    <div class="summary-stats">
+      <div class="summary-stat">
+        <div class="summary-stat-num" id="sum-score" style="color: #a78bfa;">--</div>
+        <div class="summary-stat-label">Final Score</div>
+      </div>
+      <div class="summary-stat">
+        <div class="summary-stat-num" id="sum-engaged" style="color: #22c55e;">0</div>
+        <div class="summary-stat-label">Times Engaged</div>
+      </div>
+      <div class="summary-stat">
+        <div class="summary-stat-num" id="sum-missed" style="color: #ef4444;">0</div>
+        <div class="summary-stat-label">Times Missed</div>
+      </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="engagement-chart" width="400" height="200"></canvas>
+    </div>
+    <a href="/Student/Dashboard" class="btn-dashboard">Back to Dashboard</a>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let sessionId        = null;
+let sessionSubject   = "";
+let sessionStart     = null;
+let sessionDuration  = 60;   // minutes
+let thresholdPercent = 80;
+let joined           = false;
+let alreadyMarked    = @(isAlreadyMarked ? "true" : "false");
+let userRole         = "@role";
+let heartbeatTimer   = null;
+let engagementTimer  = null;
+let webcamStream     = null;
+
+let currentScore     = 50;
+let totalDetected    = 0;
+let totalMissed      = 0;
+let scoreHistory     = [];
+
+// ─────────────────────────────────────────────
+// ON PAGE LOAD: check for active session
+// ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+    await checkForActiveSession();
+    setInterval(checkForActiveSession, 15000); // re-check every 15 sec
+});
+
+async function checkForActiveSession() {
+    try {
+        const res  = await fetch('/LiveClass/GetActiveSession');
+        const data = await res.json();
+
+        if (data.isLive) {
+            sessionId        = data.sessionId;
+            sessionSubject   = data.subject;
+            sessionStart     = new Date(data.startTime);
+            sessionDuration  = data.durationMinutes;
+            thresholdPercent = data.thresholdPercent;
+
+            document.getElementById('live-dot').style.background   = '#22c55e';
+            document.getElementById('live-label').textContent       = 'CLASS LIVE';
+            document.getElementById('class-subject').textContent    = '📚 ' + sessionSubject;
+            document.getElementById('info-subject').textContent     = sessionSubject;
+            document.getElementById('info-duration').textContent    = sessionDuration + ' min';
+            document.getElementById('info-status').textContent      = 'Live ✔';
+            document.getElementById('session-info-card').style.display = 'block';
+
+            document.getElementById('not-live-msg').style.display   = 'none';
+            document.getElementById('jitsi-container').style.display = 'block';
+
+            // Load Jitsi
+            loadJitsi(sessionSubject);
+
+            if (userRole === "teacher") {
+                document.getElementById('attendance-card').style.display = 'none';
+                document.getElementById('engagement-card').style.display = 'none';
+                document.getElementById('marked-banner').style.display = 'none';
+                document.getElementById('session-info-card').style.display = 'block';
+                return; // Teacher doesn't need to join or track engagement
+            }
+
+            document.getElementById('attendance-card').style.display = 'block';
+            document.getElementById('engagement-card').style.display = 'block';
+
+            // Student joins (records entry time)
+            if (!joined) {
+                joined = true;
+                const joinRes = await fetch('/LiveClass/JoinClass', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ sessionId })
+                });
+                if (!joinRes.ok) {
+                    const text = await joinRes.text();
+                    console.error('Join class failed:', text);
+                    joined = false;
+                    return;
+                }
+                startHeartbeat();
+                startEngagementTracking();
+            }
+
+            updateAttendanceUI();
+        } else {
+            // If class was live, and now it isn't, and we are a student, show summary
+            if (joined && userRole === "student") {
+                showSummaryModal();
+                joined = false; // prevent running multiple times
+            } else if (!joined) {
+                document.getElementById('live-dot').style.background = '#ef4444';
+                document.getElementById('live-label').textContent    = 'Not Live';
+            }
+        }
+    } catch(e) { console.error('Session check error', e); }
+}
+
+// ─────────────────────────────────────────────
+// ATTENDANCE UI — updates every second
+// ─────────────────────────────────────────────
+function updateAttendanceUI() {
+    if (!sessionStart || alreadyMarked) return;
+
+    const now          = new Date();
+    const elapsedMins  = (now - sessionStart) / 60000;
+    const totalMins    = sessionDuration;
+    const percent      = Math.min(100, (elapsedMins / totalMins) * 100);
+    const thresholdPct = thresholdPercent;
+
+    document.getElementById('timer-pct').textContent  = Math.round(percent) + '%';
+    document.getElementById('time-display').textContent = Math.round(elapsedMins) + ' min';
+    document.getElementById('att-bar').style.width     = percent + '%';
+
+    // SVG circle progress
+    const circle = document.getElementById('prog-circle');
+    const offset = 283 - (283 * percent / 100);
+    circle.style.strokeDashoffset = offset;
+    circle.style.stroke = percent >= thresholdPct ? '#22c55e' : '#a78bfa';
+
+    setTimeout(updateAttendanceUI, 1000);
+}
+
+// ─────────────────────────────────────────────
+// HEARTBEAT — pings server every 30 seconds
+// tells server student is still present
+// server returns justMarked=true when threshold hit
+// ─────────────────────────────────────────────
+function startHeartbeat() {
+    if (heartbeatTimer) return;
+    heartbeatTimer = setInterval(async () => {
+        if (!sessionId || alreadyMarked) return;
+        try {
+            const res  = await fetch('/LiveClass/Heartbeat', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ sessionId })
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.justMarked) {
+                alreadyMarked = true;
+                showMarkedBanner();
+                clearInterval(heartbeatTimer);
+                clearInterval(engagementTimer);
+            }
+        } catch(e) { console.error('Heartbeat error', e); }
+    }, 30000); // every 30 seconds
+}
+
+function showMarkedBanner() {
+    document.getElementById('marked-banner').classList.add('show');
+    document.getElementById('timer-pct').textContent      = '✔';
+    document.getElementById('timer-text').textContent     = 'Present!';
+    document.getElementById('prog-circle').style.stroke   = '#22c55e';
+    document.getElementById('prog-circle').style.strokeDashoffset = '0';
+    document.getElementById('att-bar').style.width        = '100%';
+    document.getElementById('att-bar').style.background   = 'linear-gradient(90deg,#166534,#22c55e)';
+}
+
+// ─────────────────────────────────────────────
+// ENGAGEMENT TRACKING via your existing API
+// Sends webcam frame every 2 seconds
+// ─────────────────────────────────────────────
+async function startEngagementTracking() {
+    try {
+        webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        const video  = document.getElementById('webcam-video');
+        video.srcObject = webcamStream;
+    } catch(e) {
+        document.getElementById('eng-status').textContent = 'No camera';
+        return;
+    }
+
+    engagementTimer = setInterval(captureAndScore, 2000);
+}
+
+async function captureAndScore() {
+    if (!sessionId) return;
+    const video  = document.getElementById('webcam-video');
+    const canvas = document.getElementById('capture-canvas');
+    const ctx    = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 320, 240);
+    const frameBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+    try {
+        const res = await fetch('/Engagement/Analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                frame: frameBase64, 
+                sessionId: sessionId, 
+                currentScore: currentScore 
+            })
+        });
+        
+        if (!res.ok) return;
+        const data = await res.json();
+
+        currentScore = data.score;
+        if (data.faceDetected) {
+            totalDetected++;
+        } else {
+            totalMissed++;
+        }
+
+        const nowMs = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        scoreHistory.push({ time: nowMs, score: currentScore });
+
+        // Update UI
+        document.getElementById('eng-score').textContent = currentScore;
+        document.getElementById('eng-status').textContent =
+            currentScore >= 70 ? '😊 Focused' :
+            currentScore >= 40 ? '😐 Moderate' : '😴 Low';
+        document.getElementById('eng-status').style.color =
+            currentScore >= 70 ? '#22c55e' : currentScore >= 40 ? '#eab308' : '#ef4444';
+
+    } catch(e) { console.error('Analyze error', e); }
+}
+
+function showSummaryModal() {
+    clearInterval(engagementTimer);
+    clearInterval(heartbeatTimer);
+    if (webcamStream) webcamStream.getTracks().forEach(t => t.stop());
+
+    document.getElementById('sum-score').textContent = currentScore;
+    document.getElementById('sum-engaged').textContent = totalDetected;
+    document.getElementById('sum-missed').textContent = totalMissed;
+    
+    document.getElementById('summary-modal').style.display = 'flex';
+
+    const ctx = document.getElementById('engagement-chart').getContext('2d');
+    const labels = scoreHistory.map(h => h.time);
+    const dataPoints = scoreHistory.map(h => h.score);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Engagement Score',
+                data: dataPoints,
+                borderColor: '#a78bfa',
+                backgroundColor: 'rgba(167, 139, 250, 0.2)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { min: 0, max: 100, ticks: { color: '#888' }, grid: { color: '#2a2a4a' } },
+                x: { ticks: { color: '#888', maxTicksLimit: 5 }, grid: { display: false } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+// ─────────────────────────────────────────────
+// JITSI MEET EMBED
+// ─────────────────────────────────────────────
+let jitsiLoaded = false;
+function loadJitsi(subject) {
+    if (jitsiLoaded) return;
+    jitsiLoaded = true;
+
+    const today     = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const roomName  = 'GLA-' + subject.replace(/\s+/g,'-') + '-' + today;
+    const container = document.getElementById('jitsi-container');
+    container.style.display = 'block';
+
+    const script = document.createElement('script');
+    script.src   = 'https://meet.jit.si/external_api.js';
+    script.onload = () => {
+        new JitsiMeetExternalAPI('meet.jit.si', {
+            roomName,
+            parentNode: container,
+            width: '100%',
+            height: '100%',
+            configOverwrite:    { startWithAudioMuted: false, startWithVideoMuted: false },
+            interfaceConfigOverwrite: { SHOW_JITSI_WATERMARK: false, TOOLBAR_BUTTONS: ['microphone','camera','chat','tileview','hangup'] }
+        });
+    };
+    document.head.appendChild(script);
+}
+</script>
+</body>
+</html>
