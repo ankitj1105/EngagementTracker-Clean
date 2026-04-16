@@ -4,7 +4,8 @@
 ## Get latest from `dotnet new gitignore`
 # dotenv files
 .env
-
+firebase-credentials.json
+*.json.key
 # User-specific files
 *.rsuser
 *.suo
