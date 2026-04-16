@@ -7,25 +7,45 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    // 🔥 READ Firebase JSON from ENV VARIABLE
-    var firebaseJson = Environment.GetEnvironmentVariable("FIREBASE_JSON");
+    // 🔥 HANDLE FIREBASE CONFIG (LOCAL + AZURE)
+    string firebaseJson;
 
+    // 1️⃣ Try ENV (Azure)
+    firebaseJson = Environment.GetEnvironmentVariable("FIREBASE_JSON");
+
+    // 2️⃣ If not found → use local file
     if (string.IsNullOrEmpty(firebaseJson))
     {
-        throw new Exception("FIREBASE_JSON environment variable is missing!");
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "firebase-credentials.json");
+
+        if (!File.Exists(path))
+            throw new Exception("Firebase credentials file not found!");
+
+        firebaseJson = File.ReadAllText(path);
     }
 
-    // 🔥 FIX NEWLINE ISSUE (VERY IMPORTANT)
+    // 🔥 Fix newline issue (important for Azure ENV)
     firebaseJson = firebaseJson.Replace("\\n", "\n");
 
-    // 🔥 Initialize Firebase
-    FirebaseApp.Create(new AppOptions
-    {
-        Credential = GoogleCredential.FromJson(firebaseJson)
-    });
+    // 🔥 Create credential ONCE
+    var credential = GoogleCredential.FromJson(firebaseJson);
 
-    // 🔥 Firestore
-    var firestoreDb = FirestoreDb.Create("studentengagementtracker");
+    // 🔥 Initialize Firebase (safe)
+    if (FirebaseApp.DefaultInstance == null)
+    {
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = credential
+        });
+    }
+
+    // 🔥 FIXED Firestore initialization (NO MORE ADC ERROR)
+    var firestoreDb = new FirestoreDbBuilder
+    {
+        ProjectId = "studentengagementtracker",
+        Credential = credential
+    }.Build();
+
     builder.Services.AddSingleton(firestoreDb);
 
     // 🔥 Session
@@ -39,7 +59,7 @@ try
 
     builder.Services.AddControllersWithViews();
 
-    // 🔥 YOUR SERVICES (KEEP THESE)
+    // 🔥 Your Services
     builder.Services.AddScoped<FirebaseAuthService>();
     builder.Services.AddScoped<AttendanceService>();
     builder.Services.AddScoped<MarksService>();
@@ -54,7 +74,7 @@ try
 
     var app = builder.Build();
 
-    // 🔥 ERROR HANDLER
+    // 🔥 Error handler
     app.UseExceptionHandler(a => a.Run(async context =>
     {
         context.Response.ContentType = "application/json";
