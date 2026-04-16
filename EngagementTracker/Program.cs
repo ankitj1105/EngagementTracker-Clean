@@ -5,19 +5,31 @@ using Google.Cloud.Firestore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Firebase Admin SDK init
-FirebaseApp.Create(new AppOptions
+
+// 🔥 STEP 1: Read Firebase JSON from Azure Environment Variable
+var firebaseJson = Environment.GetEnvironmentVariable("FIREBASE_JSON");
+
+if (string.IsNullOrEmpty(firebaseJson))
 {
-    Credential = GoogleCredential.FromFile("firebase-credentials.json")
+    throw new Exception("FIREBASE_JSON environment variable not found");
+}
+
+
+// 🔥 STEP 2: Initialize Firebase using JSON (NOT file)
+var credential = GoogleCredential.FromJson(firebaseJson);
+
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = credential
 });
 
-// Firestore
-Environment.SetEnvironmentVariable(
-    "GOOGLE_APPLICATION_CREDENTIALS", "firebase-credentials.json");
+
+// 🔥 STEP 3: Firestore (NO file path needed anymore)
 var firestoreDb = FirestoreDb.Create("studentengagementtracker");
 builder.Services.AddSingleton(firestoreDb);
 
-// Session (for storing logged-in user info)
+
+// ✅ Session (for storing logged-in user info)
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -26,33 +38,47 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+
+// ✅ MVC + Services
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<EngagementTracker.Services.FirebaseAuthService>();
-builder.Services.AddScoped<EngagementTracker.Services.AttendanceService>();
-builder.Services.AddScoped<EngagementTracker.Services.MarksService>();
-builder.Services.AddScoped<EngagementTracker.Services.AssignmentService>();
-builder.Services.AddScoped<EngagementTracker.Services.EngagementService>();
-builder.Services.AddScoped<EngagementTracker.Services.FaceAttendanceService>();
-builder.Services.AddSession();
+
+builder.Services.AddScoped<FirebaseAuthService>();
+builder.Services.AddScoped<AttendanceService>();
+builder.Services.AddScoped<MarksService>();
+builder.Services.AddScoped<AssignmentService>();
+builder.Services.AddScoped<EngagementService>();
+builder.Services.AddScoped<FaceAttendanceService>();
+builder.Services.AddScoped<LiveClassService>();
+builder.Services.AddScoped<TimetableService>();
+
 builder.Services.AddSingleton<SubjectService>();
 builder.Services.AddSignalR();
-// ADD THIS LINE alongside your other service registrations
-builder.Services.AddScoped<EngagementTracker.Services.LiveClassService>();
-builder.Services.AddScoped<EngagementTracker.Services.TimetableService>();
+
 
 var app = builder.Build();
-app.UseExceptionHandler(a => a.Run(async context => {
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = 500;
-        await context.Response.WriteAsync("{\"error\":\"Internal server error\"}");
-    }));
+
+
+// ✅ Global error handler
+app.UseExceptionHandler(a => a.Run(async context =>
+{
+    context.Response.ContentType = "application/json";
+    context.Response.StatusCode = 500;
+    await context.Response.WriteAsync("{\"error\":\"Internal server error\"}");
+}));
+
+
+// ✅ Middleware pipeline
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
 app.UseAuthorization();
 
+
+// ✅ Routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Auth}/{action=Login}/{id?}");
+
 app.MapHub<EngagementTracker.Hubs.QuizHub>("/quizHub");
+
 app.Run();
