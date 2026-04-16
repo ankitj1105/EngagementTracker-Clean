@@ -5,31 +5,25 @@ using Google.Cloud.Firestore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-// 🔥 STEP 1: Read Firebase JSON from Azure Environment Variable
+// ✅ READ Firebase JSON from ENV VARIABLE
 var firebaseJson = Environment.GetEnvironmentVariable("FIREBASE_JSON");
 
 if (string.IsNullOrEmpty(firebaseJson))
 {
-    throw new Exception("FIREBASE_JSON environment variable not found");
+    throw new Exception("FIREBASE_JSON environment variable is missing!");
 }
 
-
-// 🔥 STEP 2: Initialize Firebase using JSON (NOT file)
-var credential = GoogleCredential.FromJson(firebaseJson);
-
-FirebaseApp.Create(new AppOptions()
+// ✅ Initialize Firebase using JSON (NOT FILE)
+FirebaseApp.Create(new AppOptions
 {
-    Credential = credential
+    Credential = GoogleCredential.FromJson(firebaseJson)
 });
 
-
-// 🔥 STEP 3: Firestore (NO file path needed anymore)
+// ✅ Firestore
 var firestoreDb = FirestoreDb.Create("studentengagementtracker");
 builder.Services.AddSingleton(firestoreDb);
 
-
-// ✅ Session (for storing logged-in user info)
+// Session
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -38,8 +32,6 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-
-// ✅ MVC + Services
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<FirebaseAuthService>();
@@ -54,11 +46,8 @@ builder.Services.AddScoped<TimetableService>();
 builder.Services.AddSingleton<SubjectService>();
 builder.Services.AddSignalR();
 
-
 var app = builder.Build();
 
-
-// ✅ Global error handler
 app.UseExceptionHandler(a => a.Run(async context =>
 {
     context.Response.ContentType = "application/json";
@@ -66,15 +55,11 @@ app.UseExceptionHandler(a => a.Run(async context =>
     await context.Response.WriteAsync("{\"error\":\"Internal server error\"}");
 }));
 
-
-// ✅ Middleware pipeline
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
 app.UseAuthorization();
 
-
-// ✅ Routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Auth}/{action=Login}/{id?}");
