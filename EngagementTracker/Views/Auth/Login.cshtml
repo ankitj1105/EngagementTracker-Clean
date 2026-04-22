@@ -169,10 +169,15 @@ async function loginUser() {
     btn.style.opacity = '.7';
 
     try {
-        const res = await fetch('/Auth/LoginUser', {
+        // Sign in with Firebase
+        const cred = await window.firebaseLoginUser(email, password);
+        const token = await cred.user.getIdToken();
+
+        // Verify token with backend
+        const res = await fetch('/Auth/VerifyToken', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ IdToken: token })
         });
 
         if (res.ok) {
@@ -190,10 +195,20 @@ async function loginUser() {
                 }
             }, 500);
         } else {
-            throw new Error('Invalid credentials');
+            const errData = await res.json();
+            throw new Error(errData.error || 'Server validation failed');
         }
     } catch (e) {
-        errEl.textContent = e.message;
+        console.error(e);
+        // Map Firebase error codes to readable messages
+        let errorMsg = e.message;
+        if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
+            errorMsg = 'Invalid credentials';
+        } else if (e.code) {
+           errorMsg = 'Authentication failed. Please try again.';
+        }
+
+        errEl.textContent = errorMsg;
         errEl.style.display = 'block';
         btn.textContent = 'Sign In';
         btn.style.opacity = '1';
@@ -203,6 +218,28 @@ async function loginUser() {
 document.getElementById('password').addEventListener('keydown', e => {
     if (e.key === 'Enter') loginUser();
 });
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB475JsdcS2PVdF0JekeSs3qJ6-ImqXfYo",
+  authDomain: "studentengagementtracker.firebaseapp.com",
+  databaseURL: "https://studentengagementtracker-default-rtdb.firebaseio.com",
+  projectId: "studentengagementtracker",
+  storageBucket: "studentengagementtracker.firebasestorage.app",
+  messagingSenderId: "267391217533",
+  appId: "1:267391217533:web:0963e6877d2ff60384e614"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.firebaseLoginUser = function(email, password) {
+  return signInWithEmailAndPassword(auth, email, password);
+};
 </script>
 </body>
 </html>
