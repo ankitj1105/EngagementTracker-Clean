@@ -8,105 +8,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Teacher Dashboard</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --bg:#07070e;--surface:#0f0f18;--surface2:#13131e;
-  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);
-  --purple:#7c3aed;--purple2:#4f46e5;--purple-glow:rgba(124,58,237,.15);
-  --text:#f0eeff;--muted:rgba(255,255,255,.4);--muted2:rgba(255,255,255,.18);
-  --green:#22c55e;--red:#ef4444;--amber:#f59e0b;
-}
-body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(--text);display:flex;min-height:100vh;}
-.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:100;}
-.brand{padding:20px 16px 16px;border-bottom:1px solid var(--border);}
-.brand-row{display:flex;align-items:center;gap:10px;}
-.brand-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--purple),var(--purple2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;box-shadow:0 4px 14px rgba(124,58,237,.4);}
-.brand-name{font-weight:800;font-size:.85rem;color:var(--text);}
-.brand-sub{font-size:.65rem;color:var(--muted);margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
-.nav{padding:8px 0;flex:1;}
-/* FIX #1: Nav links must use href="#" so they don't navigate away */
-.nav a{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--muted);text-decoration:none;font-size:.82rem;border-left:3px solid transparent;transition:all .18s;cursor:pointer;}
-.nav a:hover{color:var(--text);background:rgba(255,255,255,.03);}
-.nav a.active{color:#a78bfa;background:var(--purple-glow);border-left-color:var(--purple);}
-.nav-icon{font-size:.95rem;width:18px;text-align:center;}
-.nav-section{font-size:.62rem;font-weight:600;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;padding:14px 16px 4px;}
-.sidebar-bottom{border-top:1px solid var(--border);padding:6px 0;}
-.logout-btn{display:flex;align-items:center;gap:10px;padding:10px 16px;color:rgba(248,113,113,.55);text-decoration:none;font-size:.82rem;transition:all .2s;}
-.logout-btn:hover{color:#f87171;background:rgba(248,113,113,.07);}
-.main{margin-left:220px;padding:24px 28px;flex:1;}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
-.topbar-left h4{font-weight:700;font-size:1.15rem;color:var(--text);}
-.topbar-left p{font-size:.75rem;color:var(--muted);margin-top:2px;}
-.user-chip{background:var(--surface2);border:1px solid var(--border);border-radius:30px;padding:5px 14px 5px 6px;display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);}
-.user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;}
-.section{display:none;}
-.section.active{display:block;}
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;}
-.stat-card:hover{border-color:rgba(124,58,237,.25);transform:translateY(-2px);}
-.stat-glow{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;filter:blur(30px);opacity:.2;}
-.stat-value{font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;margin-bottom:4px;}
-.stat-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
-.stat-sub{font-size:.72rem;color:var(--muted2);margin-top:5px;}
-.stat-icon{font-size:1.3rem;margin-bottom:10px;}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:18px;}
-.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.card-title{font-size:.85rem;font-weight:700;color:var(--text);}
-.card-action{font-size:.72rem;color:#a78bfa;cursor:pointer;text-decoration:none;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.2);padding:5px 12px;border-radius:8px;transition:all .2s;}
-.card-action:hover{background:rgba(124,58,237,.2);}
-.badge{padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:600;}
-.b-present{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.15);}
-.b-absent{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.15);}
-.b-late{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.15);}
-.b-ok{background:rgba(34,197,94,.12);color:#4ade80;}
-.b-warn{background:rgba(245,158,11,.12);color:#fbbf24;}
-.b-risk{background:rgba(239,68,68,.12);color:#f87171;}
-.b-fail{background:rgba(239,68,68,.12);color:#f87171;}
-.dtable{width:100%;border-collapse:collapse;font-size:.81rem;}
-.dtable th{padding:9px 12px;text-align:left;font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);}
-.dtable td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text);}
-.dtable tr:last-child td{border-bottom:none;}
-.dtable tr:hover td{background:rgba(255,255,255,.015);}
-.prog-wrap{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:4px;}
-.prog-fill{height:100%;border-radius:3px;}
-.alert-risk{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:12px 16px;color:#fca5a5;font-size:.82rem;display:flex;align-items:center;gap:10px;margin-bottom:18px;}
-.fg{margin-bottom:14px;}
-.fg label{display:block;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;}
-.fg input,.fg select{width:100%;background:#111;border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:.65rem .9rem;color:#fff;font-size:.88rem;font-family:inherit;outline:none;transition:border-color .2s;}
-.fg input:focus,.fg select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.15);}
-.fg select option{background:#111;}
-.status-row{display:flex;gap:8px;}
-.status-btn{flex:1;padding:.6rem;text-align:center;border:1px solid rgba(255,255,255,.1);border-radius:9px;cursor:pointer;font-size:.82rem;color:var(--muted);transition:all .2s;background:transparent;}
-.status-btn.s-present.sel{border-color:#22c55e;color:#4ade80;background:rgba(34,197,94,.1);}
-.status-btn.s-absent.sel{border-color:#ef4444;color:#f87171;background:rgba(239,68,68,.1);}
-.status-btn.s-late.sel{border-color:#f59e0b;color:#fbbf24;background:rgba(245,158,11,.1);}
-.btn-save{width:100%;padding:.78rem;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:10px;color:#fff;font-size:.93rem;font-weight:700;font-family:inherit;cursor:pointer;margin-top:6px;transition:opacity .2s;}
-.btn-save:hover{opacity:.9;}
-.success-msg{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:10px 14px;color:#4ade80;font-size:.8rem;margin-top:10px;display:none;}
-.empty{color:var(--muted);font-size:.82rem;padding:16px 0;}
-.loading{color:var(--muted2);font-size:.8rem;padding:20px 0;text-align:center;}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
-.span2{grid-column:span 2;}
-.action-btn{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:7px;color:#a78bfa;padding:5px 12px;font-size:.75rem;cursor:pointer;transition:all .2s;}
-.action-btn:hover{background:rgba(124,58,237,.25);}
-.sub-modal{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:18px;margin-top:16px;display:none;}
-.sub-modal.open{display:block;}
-/* LIVE CARD */
-.live-card{background:linear-gradient(145deg,#0f172a,#1e293b);padding:20px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.4);}
-.live-input{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:none;background:#020617;color:white;}
-.live-btns{display:flex;gap:10px;margin-top:15px;}
-.btn-live{flex:1;padding:12px;border-radius:12px;border:none;font-weight:600;cursor:pointer;transition:0.3s;}
-.btn-live.start{background:linear-gradient(90deg,#22c55e,#16a34a);color:white;}
-.btn-live.start:hover{transform:scale(1.05);}
-.btn-live.end{background:linear-gradient(90deg,#ef4444,#dc2626);color:white;}
-.btn-live.end:hover{transform:scale(1.05);}
-.live-status{margin-top:15px;font-weight:bold;font-size:14px;}
-.chart-modal { background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px; padding: 18px; margin-top: 16px; display: none; }
-.chart-modal.open { display: block; }
-.chart-container { position: relative; height: 250px; width: 100%; border-radius: 8px; margin-top: 10px; }
-</style>
+<link href="~/css/dashboard-theme.css" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -174,28 +76,48 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
   <!-- DASHBOARD -->
   <div id="sec-dashboard" class="section active">
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-glow" style="background:#7c3aed;"></div><div class="stat-icon">👥</div><div class="stat-value" id="st-students">--</div><div class="stat-label">Total Students</div><div class="stat-sub">registered in system</div></div>
-      <div class="stat-card"><div class="stat-glow" style="background:#22c55e;"></div><div class="stat-icon">📅</div><div class="stat-value" id="st-att">--%</div><div class="stat-label">Avg Attendance</div><div class="stat-sub">across all students</div></div>
-      <div class="stat-card"><div class="stat-glow" style="background:#ef4444;"></div><div class="stat-icon">⚠️</div><div class="stat-value" id="st-risk">--</div><div class="stat-label">At-Risk Students</div><div class="stat-sub">below 75% attendance</div></div>
-      <div class="stat-card"><div class="stat-glow" style="background:#f59e0b;"></div><div class="stat-icon">📂</div><div class="stat-value" id="st-assign">--</div><div class="stat-label">Assignments</div><div class="stat-sub">posted total</div></div>
+      <div class="stat-card">
+        <div class="stat-icon pu">👥</div>
+        <div class="stat-details">
+          <h3 id="st-students">--</h3><p>Total Students</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gr">📅</div>
+        <div class="stat-details">
+          <h3 id="st-att">--%</h3><p>Avg Attendance</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon pi">⚠️</div>
+        <div class="stat-details">
+          <h3 id="st-risk">--</h3><p>At-Risk Students</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bl">📂</div>
+        <div class="stat-details">
+          <h3 id="st-assign">--</h3><p>Assignments</p>
+        </div>
+      </div>
     </div>
     <div class="two-col">
       <div class="card">
         <div class="card-head"><span class="card-title">👥 Recent Students</span><a class="card-action" onclick="goSecById('students')">View all →</a></div>
         <div id="d-students"><div class="loading">Loading...</div></div>
       </div>
-      <div class="live-card">
-        <h3>🎥 Live Class Control</h3>
-        <input id="live-subject" placeholder="Enter Subject (e.g. DSA)" class="live-input" />
-        <input type="number" id="durationInput" placeholder="Duration (minutes)" value="60"
-               style="width:100%;padding:10px;background:#1a1a35;border:1px solid #3d3d6b;
-              color:#fff;border-radius:8px;margin-bottom:8px"/>
-        <div class="live-btns">
-          <button onclick="startLiveClass()" class="btn-live start">▶ Start Class</button>
-          <button onclick="joinLiveMeeting()" class="btn-live" id="join-btn" style="background:#7c3aed;color:#fff;display:none;">🎥 Join Meeting</button>
-          <button onclick="endLiveClass()" class="btn-live end">■ End Class</button>
+      <div class="card">
+        <div class="card-head"><span class="card-title">🎥 Live Class Control</span></div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <input id="live-subject" placeholder="Enter Subject (e.g. DSA)" class="t-input" />
+          <input type="number" id="durationInput" placeholder="Duration (minutes)" value="60" class="t-input" />
+          <div style="display:flex; gap:10px; margin-top: 8px;">
+            <button onclick="startLiveClass()" class="action-btn" style="flex:1; padding:12px; background:var(--success); font-size:0.95rem;">▶ Start Class</button>
+            <button onclick="joinLiveMeeting()" class="action-btn" id="join-btn" style="background:var(--primary);color:#fff;display:none;flex:1;padding:12px;font-size:0.95rem;">🎥 Join Meeting</button>
+            <button onclick="endLiveClass()" class="action-btn danger" style="flex:1; padding:12px; font-size:0.95rem;">■ End Class</button>
+          </div>
+          <div id="live-status" style="margin-top: 8px; font-weight: 700; color: var(--danger); font-size: 0.9rem;">🔴 Not Live</div>
         </div>
-        <div id="live-status" class="live-status">🔴 Not Live</div>
       </div>
     </div>
     <div class="card">
@@ -230,14 +152,11 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
           <div style="color:#fff;font-size:1rem;font-weight:700;">🔍 Scanning faces...</div>
         </div>
       </div>
-      <div style="display:flex;gap:10px;">
-        <button class="btn-save" id="face-start-btn" onclick="startFaceScan()" style="flex:1;margin-top:0;">📷 Open Camera & Scan</button>
-        <div style="margin-top:15px;display:flex;gap:10px;">
-          <!-- FIX #2: startClass / endClass now defined below -->
-          <button onclick="startClass()" style="padding:10px 20px;background:#22c55e;border:none;border-radius:8px;color:white;cursor:pointer;">▶ Start Class</button>
-          <button onclick="endClass()" style="padding:10px 20px;background:#ef4444;border:none;border-radius:8px;color:white;cursor:pointer;">⏹ End Class</button>
-        </div>
-        <button id="face-capture-btn" onclick="captureFaceScan()" style="flex:1;padding:.78rem;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:10px;color:#4ade80;font-size:.9rem;font-weight:700;cursor:pointer;display:none;">✅ Take Scan & Mark Attendance</button>
+      <div style="display:flex; gap:10px; flex-wrap: wrap;">
+        <button class="btn-primary" id="face-start-btn" onclick="startFaceScan()" style="flex:1; margin-top:0;">📷 Open Camera &amp; Scan</button>
+        <button onclick="startClass()" class="action-btn" style="flex:1; background:var(--success); color:white; padding:14px; font-size:1rem;">▶ Start Class</button>
+        <button onclick="endClass()" class="action-btn danger" style="flex:1; padding:14px; font-size:1rem;">⏹ End Class</button>
+        <button id="face-capture-btn" onclick="captureFaceScan()" style="flex:100%; padding:14px; background:rgba(5,205,153,0.15); border:1px solid rgba(5,205,153,0.3); border-radius:14px; color:var(--success); font-size:1rem; font-weight:800; cursor:pointer; display:none;">✅ Take Scan &amp; Mark Attendance</button>
       </div>
       <div id="face-results" style="margin-top:16px;"></div>
     </div>
@@ -376,9 +295,24 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(
   <!-- ENGAGEMENT -->
   <div id="sec-engagement" class="section">
     <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);">
-      <div class="stat-card"><div class="stat-glow" style="background:#7c3aed;"></div><div class="stat-icon">👥</div><div class="stat-value" id="eng-total">--</div><div class="stat-label">Students Tracked</div><div class="stat-sub">with engagement data</div></div>
-      <div class="stat-card"><div class="stat-glow" style="background:#22c55e;"></div><div class="stat-icon">🔥</div><div class="stat-value" id="eng-avg">--</div><div class="stat-label">Avg Score</div><div class="stat-sub">across all students</div></div>
-      <div class="stat-card"><div class="stat-glow" style="background:#ef4444;"></div><div class="stat-icon">⚠️</div><div class="stat-value" id="eng-low">--</div><div class="stat-label">Low Engagement</div><div class="stat-sub">score below 40</div></div>
+      <div class="stat-card">
+        <div class="stat-icon pu">👥</div>
+        <div class="stat-details">
+          <h3 id="eng-total">--</h3><p>Students Tracked</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gr">🔥</div>
+        <div class="stat-details">
+          <h3 id="eng-avg">--</h3><p>Avg Score</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon pi">⚠️</div>
+        <div class="stat-details">
+          <h3 id="eng-low">--</h3><p>Low Engagement</p>
+        </div>
+      </div>
     </div>
     <div class="card">
       <div class="card-head"><span class="card-title">🎥 Student Engagement Scores</span><span class="card-action" onclick="loadEngagement()">🔄 Refresh</span></div>

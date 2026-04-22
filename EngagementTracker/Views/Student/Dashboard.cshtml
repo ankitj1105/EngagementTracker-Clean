@@ -10,143 +10,7 @@ var uid  = ViewBag.Uid  ?? "";
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Student Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet"/>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    :root{
-      --bg:#07070e;--surface:#0f0f18;--surface2:#13131e;--surface3:#1a1a28;
-      --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);
-      --purple:#7c3aed;--purple2:#4f46e5;--purple-glow:rgba(124,58,237,.15);
-      --text:#f0eeff;--muted:rgba(255,255,255,.4);--muted2:rgba(255,255,255,.18);
-      --green:#22c55e;--red:#ef4444;--amber:#f59e0b;--cyan:#06b6d4;
-    }
-    body{background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(--text);display:flex;min-height:100vh;}
-    .sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:100;}
-    .brand{padding:20px 16px 16px;border-bottom:1px solid var(--border);}
-    .brand-row{display:flex;align-items:center;gap:10px;}
-    .brand-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--purple),var(--purple2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;box-shadow:0 4px 14px rgba(124,58,237,.4);}
-    .brand-name{font-weight:800;font-size:.85rem;color:var(--text);}
-    .brand-sub{font-size:.65rem;color:var(--muted);margin-top:3px;letter-spacing:.05em;text-transform:uppercase;}
-    .nav{padding:8px 0;flex:1;overflow-y:auto;}
-    .nav a{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--muted);text-decoration:none;font-size:.82rem;border-left:3px solid transparent;transition:all .18s;}
-    .nav a:hover{color:var(--text);background:rgba(255,255,255,.03);}
-    .nav a.active{color:#a78bfa;background:var(--purple-glow);border-left-color:var(--purple);}
-    .nav-icon{font-size:.95rem;width:18px;text-align:center;}
-    .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.62rem;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;}
-    .nav-section{font-size:.62rem;font-weight:600;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;padding:14px 16px 4px;}
-    .sidebar-bottom{border-top:1px solid var(--border);padding:6px 0;}
-    .logout-btn{display:flex;align-items:center;gap:10px;padding:10px 16px;color:rgba(248,113,113,.55);text-decoration:none;font-size:.82rem;transition:all .2s;}
-    .logout-btn:hover{color:#f87171;background:rgba(248,113,113,.07);}
-    .main{margin-left:220px;padding:24px 28px;flex:1;min-height:100vh;}
-    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
-    .topbar-left h4{font-weight:700;font-size:1.15rem;color:var(--text);}
-    .topbar-left p{font-size:.75rem;color:var(--muted);margin-top:2px;}
-    .topbar-right{display:flex;align-items:center;gap:12px;}
-    .notif-btn{width:36px;height:36px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;font-size:1rem;transition:all .2s;}
-    .notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1px solid var(--bg);}
-    .user-chip{background:var(--surface2);border:1px solid var(--border);border-radius:30px;padding:5px 14px 5px 6px;display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);cursor:pointer;}
-    .user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;}
-    .section{display:none;}
-    .section.active{display:block;}
-    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;}
-    .stat-card:hover{border-color:rgba(124,58,237,.25);transform:translateY(-2px);}
-    .stat-glow{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;filter:blur(30px);opacity:.25;}
-    .stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-    .stat-icon-wrap{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;}
-    .stat-trend{font-size:.7rem;font-weight:600;padding:3px 8px;border-radius:20px;}
-    .trend-up{background:rgba(34,197,94,.12);color:#4ade80;}
-    .trend-down{background:rgba(239,68,68,.12);color:#f87171;}
-    .trend-neu{background:rgba(255,255,255,.06);color:var(--muted);}
-    .stat-value{font-size:1.8rem;font-weight:800;color:var(--text);line-height:1;margin-bottom:4px;}
-    .stat-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
-    .stat-sub{font-size:.72rem;color:var(--muted2);margin-top:5px;}
-    .stat-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:10px;overflow:hidden;}
-    .stat-bar-fill{height:100%;border-radius:2px;transition:width .8s ease;}
-    .alert-risk{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:12px 16px;color:#fca5a5;font-size:.82rem;display:flex;align-items:center;gap:10px;margin-bottom:18px;}
-    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:18px;}
-    .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-    .card-title{font-size:.85rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;}
-    .card-action{font-size:.72rem;color:#a78bfa;cursor:pointer;text-decoration:none;}
-    .row-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
-    .row-item:last-child{border-bottom:none;}
-    .row-main{font-size:.83rem;font-weight:600;color:var(--text);}
-    .row-sub{font-size:.73rem;color:var(--muted);margin-top:2px;}
-    .badge{padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:600;}
-    .b-present{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.15);}
-    .b-absent{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.15);}
-    .b-late{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.15);}
-    .b-ok{background:rgba(34,197,94,.12);color:#4ade80;}
-    .b-warn{background:rgba(245,158,11,.12);color:#fbbf24;}
-    .b-fail{background:rgba(239,68,68,.12);color:#f87171;}
-    .b-grade-a{background:rgba(34,197,94,.12);color:#4ade80;}
-    .b-grade-b{background:rgba(6,182,212,.12);color:#22d3ee;}
-    .b-grade-c{background:rgba(245,158,11,.12);color:#fbbf24;}
-    .b-grade-f{background:rgba(239,68,68,.12);color:#f87171;}
-    .prog-wrap{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:5px;}
-    .prog-fill{height:100%;border-radius:3px;}
-    .dtable{width:100%;border-collapse:collapse;font-size:.81rem;}
-    .dtable th{padding:9px 12px;text-align:left;font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);}
-    .dtable td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text);}
-    .dtable tr:last-child td{border-bottom:none;}
-    .dtable tr:hover td{background:rgba(255,255,255,.015);}
-    .profile-hero{background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(79,70,229,.1));border:1px solid rgba(124,58,237,.2);border-radius:16px;padding:28px 24px;margin-bottom:18px;display:flex;align-items:center;gap:20px;}
-    .profile-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 8px 24px rgba(124,58,237,.4);}
-    .profile-info h3{font-size:1.15rem;font-weight:800;color:var(--text);}
-    .profile-info p{font-size:.78rem;color:var(--muted);margin-top:3px;}
-    .profile-tags{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
-    .profile-tag{padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600;background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.2);}
-    .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-    .profile-field{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
-    .profile-field label{font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:4px;}
-    .profile-field span{font-size:.85rem;color:var(--text);font-weight:500;}
-    .notif-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
-    .notif-item:last-child{border-bottom:none;}
-    .notif-dot-icon{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
-    .notif-content .notif-title{font-size:.82rem;font-weight:600;color:var(--text);}
-    .notif-content .notif-time{font-size:.7rem;color:var(--muted);margin-top:2px;}
-    .notif-content .notif-body{font-size:.78rem;color:var(--muted);margin-top:3px;}
-    .notif-unread .notif-title{color:#a78bfa;}
-    .tt-day{margin-bottom:18px;}
-    .tt-day-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px;}
-    .tt-slot{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;transition:border-color .2s;}
-    .tt-slot:hover{border-color:rgba(124,58,237,.25);}
-    .tt-slot.today-slot{border-color:rgba(124,58,237,.3);background:rgba(124,58,237,.06);}
-    .tt-time{font-size:.72rem;font-weight:700;color:var(--muted);width:90px;flex-shrink:0;}
-    .tt-color{width:4px;height:36px;border-radius:2px;flex-shrink:0;}
-    .tt-subject{font-size:.85rem;font-weight:600;color:var(--text);}
-    .tt-room{font-size:.72rem;color:var(--muted);margin-top:2px;}
-    .fc{color:var(--text)!important;}
-    .fc-theme-standard .fc-scrollgrid,.fc-theme-standard td,.fc-theme-standard th{border-color:var(--border)!important;}
-    .fc .fc-daygrid-day{background:var(--surface2);}
-    .fc .fc-col-header-cell{background:var(--surface);}
-    .fc .fc-col-header-cell-cushion{color:var(--muted);font-size:.72rem;font-weight:600;text-transform:uppercase;text-decoration:none;}
-    .fc .fc-daygrid-day-number{color:var(--muted);font-size:.78rem;text-decoration:none;}
-    .fc .fc-daygrid-day.fc-day-today{background:rgba(124,58,237,.1)!important;}
-    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{color:#a78bfa;font-weight:700;}
-    .fc-button{background:var(--surface2)!important;border:1px solid var(--border)!important;color:var(--text)!important;border-radius:8px!important;font-size:.76rem!important;padding:5px 11px!important;}
-    .fc-button:hover{background:var(--purple-glow)!important;border-color:var(--purple)!important;}
-    .fc-toolbar-title{font-size:.9rem!important;font-weight:700!important;color:var(--text)!important;}
-    .empty{color:var(--muted);font-size:.82rem;padding:16px 0;}
-    .loading{color:var(--muted2);font-size:.8rem;padding:20px 0;text-align:center;}
-    .submit-btn{background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;border-radius:7px;color:#fff;padding:5px 12px;font-size:.75rem;cursor:pointer;transition:opacity .2s;}
-    .submit-btn:hover{opacity:.85;}
-    /* LIVE CLASS CARD */
-    .live-join-card{background:linear-gradient(135deg,#0f172a,#1e293b);padding:25px;border-radius:18px;margin-bottom:20px;box-shadow:0 10px 40px rgba(0,0,0,.5);border:1px solid rgba(34,197,94,.2);}
-    .live-header{display:flex;align-items:center;gap:8px;color:#22c55e;font-weight:bold;margin-bottom:10px;}
-    .live-dot{width:10px;height:10px;background:#22c55e;border-radius:50%;animation:pulse 1.5s infinite;}
-    @@keyframes pulse{0%{transform:scale(1);opacity:1;}50%{transform:scale(1.6);opacity:.5;}100%{transform:scale(1);opacity:1;}}
-    .live-join-card h2{color:white;margin:10px 0;font-size:1.3rem;}
-    .live-desc{color:#94a3b8;font-size:.85rem;margin-bottom:20px;}
-    .join-btn{background:linear-gradient(135deg,#6a11cb,#2575fc);color:white;padding:14px 28px;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .3s ease;box-shadow:0 4px 15px rgba(0,0,0,.3);}
-    .join-btn:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(0,0,0,.5);}
-
-    .chart-modal { background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px; padding: 18px; margin-top: 16px; display: none; }
-    .chart-modal.open { display: block; }
-    .chart-container { position: relative; height: 250px; width: 100%; border-radius: 8px; margin-top: 10px; }
-    .action-btn{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:7px;color:#a78bfa;padding:5px 12px;font-size:.75rem;cursor:pointer;transition:all .2s;}
-    .action-btn:hover{background:rgba(124,58,237,.25);}
-  </style>
+  <link href="~/css/dashboard-theme.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -203,10 +67,46 @@ var uid  = ViewBag.Uid  ?? "";
   <!-- DASHBOARD -->
   <div id="sec-dashboard" class="section active">
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-glow" style="background:#7c3aed;"></div><div class="stat-top"><div class="stat-icon-wrap" style="background:rgba(124,58,237,.15);">📅</div><span class="stat-trend trend-neu" id="att-trend">--</span></div><div class="stat-value" id="s-att">--%</div><div class="stat-label">Avg Attendance</div><div class="stat-sub">across all subjects</div><div class="stat-bar"><div class="stat-bar-fill" id="att-bar" style="width:0%;background:linear-gradient(90deg,#7c3aed,#4f46e5);"></div></div></div>
-      <div class="stat-card"><div class="stat-glow" style="background:#06b6d4;"></div><div class="stat-top"><div class="stat-icon-wrap" style="background:rgba(6,182,212,.15);">🎓</div><span class="stat-trend trend-neu" id="gpa-trend">--</span></div><div class="stat-value" id="s-gpa">--</div><div class="stat-label">Overall GPA</div><div class="stat-sub">current semester</div><div class="stat-bar"><div class="stat-bar-fill" id="gpa-bar" style="width:0%;background:linear-gradient(90deg,#06b6d4,#0891b2);"></div></div></div>
-      <div class="stat-card"><div class="stat-glow" style="background:#22c55e;"></div><div class="stat-top"><div class="stat-icon-wrap" style="background:rgba(34,197,94,.15);">✅</div><span class="stat-trend trend-neu" id="pres-trend">--</span></div><div class="stat-value" id="s-pres">--/--</div><div class="stat-label">Classes Present</div><div class="stat-sub">out of total classes</div><div class="stat-bar"><div class="stat-bar-fill" id="pres-bar" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a);"></div></div></div>
-      <div class="stat-card"><div class="stat-glow" style="background:#f59e0b;"></div><div class="stat-top"><div class="stat-icon-wrap" style="background:rgba(245,158,11,.15);">📂</div><span class="stat-trend trend-neu" id="assign-trend">--</span></div><div class="stat-value" id="s-assign">--</div><div class="stat-label">Assignments</div><div class="stat-sub">pending submission</div><div class="stat-bar"><div class="stat-bar-fill" id="assign-bar" style="width:0%;background:linear-gradient(90deg,#f59e0b,#d97706);"></div></div></div>
+      <div class="stat-card">
+        <div class="stat-icon pu">📅</div>
+        <div class="stat-details">
+          <h3 id="s-att">--%</h3><p>Avg Attendance</p>
+          <div class="stat-sub" style="display:flex; justify-content:space-between; align-items:center;">
+             <span><span id="att-trend" class="badge">--</span></span>
+             <div class="stat-bar" style="width:60px; margin-top:0;"><div class="stat-bar-fill" id="att-bar" style="width:0%;background:var(--sidebar-bg);"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bl">🎓</div>
+        <div class="stat-details">
+          <h3 id="s-gpa">--</h3><p>Overall GPA</p>
+          <div class="stat-sub" style="display:flex; justify-content:space-between; align-items:center;">
+             <span><span id="gpa-trend" class="badge">--</span></span>
+             <div class="stat-bar" style="width:60px; margin-top:0;"><div class="stat-bar-fill" id="gpa-bar" style="width:0%;background:var(--primary);"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gr">✅</div>
+        <div class="stat-details">
+          <h3 id="s-pres">--/--</h3><p>Classes Present</p>
+          <div class="stat-sub" style="display:flex; justify-content:space-between; align-items:center;">
+             <span><span id="pres-trend" class="badge">--</span></span>
+             <div class="stat-bar" style="width:60px; margin-top:0;"><div class="stat-bar-fill" id="pres-bar" style="width:0%;background:var(--success);"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon pi">📂</div>
+        <div class="stat-details">
+          <h3 id="s-assign">--</h3><p>Assignments</p>
+          <div class="stat-sub" style="display:flex; justify-content:space-between; align-items:center;">
+             <span><span id="assign-trend" class="badge">--</span></span>
+             <div class="stat-bar" style="width:60px; margin-top:0;"><div class="stat-bar-fill" id="assign-bar" style="width:0%;background:var(--danger);"></div></div>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="risk-banner" class="alert-risk" style="display:none">⚠️ <strong>Low Attendance Warning!</strong> &nbsp;Your attendance is below 75%.</div>
     <div class="two-col">

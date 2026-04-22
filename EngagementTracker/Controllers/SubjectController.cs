@@ -1,7 +1,5 @@
 using EngagementTracker.Services;
 using Microsoft.AspNetCore.Mvc;
-using EngagementTracker.Services;
-
 namespace EngagementTracker.Controllers;
 
 public class SubjectController : Controller

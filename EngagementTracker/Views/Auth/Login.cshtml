@@ -181,10 +181,13 @@ async function loginUser() {
             btn.textContent = 'Redirecting...';
 
             setTimeout(() => {
-                window.location.href =
-                    data.role === 'teacher'
-                        ? '/Teacher/Dashboard'
-                        : '/Student/Dashboard';
+                if (data.role === 'admin') {
+                    window.location.href = '/Admin/Dashboard';
+                } else if (data.role === 'teacher') {
+                    window.location.href = '/Teacher/Dashboard';
+                } else {
+                    window.location.href = '/Student/Dashboard';
+                }
             }, 500);
         } else {
             throw new Error('Invalid credentials');
