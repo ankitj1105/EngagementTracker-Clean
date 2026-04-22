@@ -199,8 +199,37 @@ async function loginUser() {
             throw new Error(errData.error || 'Server validation failed');
         }
     } catch (e) {
-        console.error(e);
-        // Map Firebase error codes to readable messages
+        console.error("Firebase Login Failed:", e);
+
+        // Fallback for legacy users (e.g. manually created Admins in Firestore)
+        if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === undefined) {
+             try {
+                const legacyRes = await fetch('/Auth/LoginUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (legacyRes.ok) {
+                    const data = await legacyRes.json();
+                    btn.textContent = 'Redirecting...';
+                    setTimeout(() => {
+                        if (data.role === 'admin') {
+                            window.location.href = '/Admin/Dashboard';
+                        } else if (data.role === 'teacher') {
+                            window.location.href = '/Teacher/Dashboard';
+                        } else {
+                            window.location.href = '/Student/Dashboard';
+                        }
+                    }, 500);
+                    return; // Exit here on successful legacy login
+                }
+             } catch (legacyError) {
+                 console.error("Legacy Login Failed:", legacyError);
+             }
+        }
+
+        // Map Firebase error codes to readable messages if fallback also fails
         let errorMsg = e.message;
         if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
             errorMsg = 'Invalid credentials';
