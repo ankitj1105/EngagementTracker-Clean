@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - engagement-tracker-ankit
+name: Build and deploy ASP.Net Core app to Azure Web App - my-engagement-tracker
 
 on:
   push:
@@ -49,7 +49,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'engagement-tracker-ankit'
+          app-name: 'my-engagement-tracker'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_624E57D7772E4A949285A4332C21B7FF }}
+          publish-profile: '<publishData><publishProfile profileName="my-engagement-tracker - Web Deploy" publishMethod="MSDeploy" publishUrl="my-engagement-tracker-cbakcva8dpfxb5en.scm.centralindia-01.azurewebsites.net:443" msdeploySite="my-engagement-tracker" userName="$my-engagement-tracker" userPWD="9ra3hSaknt2qqP8uHfFxAoCRoLMtbnHtP8gXmZ4EE3MGW0bsDSGvPo32a4MR" destinationAppUrl="https://my-engagement-tracker-cbakcva8dpfxb5en.centralindia-01.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="my-engagement-tracker - FTP" publishMethod="FTP" publishUrl="ftps://waws-prod-pn1-003.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="my-engagement-tracker\$my-engagement-tracker" userPWD="9ra3hSaknt2qqP8uHfFxAoCRoLMtbnHtP8gXmZ4EE3MGW0bsDSGvPo32a4MR" destinationAppUrl="https://my-engagement-tracker-cbakcva8dpfxb5en.centralindia-01.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="my-engagement-tracker - Zip Deploy" publishMethod="ZipDeploy" publishUrl="my-engagement-tracker-cbakcva8dpfxb5en.scm.centralindia-01.azurewebsites.net:443" userName="$my-engagement-tracker" userPWD="9ra3hSaknt2qqP8uHfFxAoCRoLMtbnHtP8gXmZ4EE3MGW0bsDSGvPo32a4MR" destinationAppUrl="https://my-engagement-tracker-cbakcva8dpfxb5en.centralindia-01.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="my-engagement-tracker - ReadOnly - FTP" publishMethod="FTP" publishUrl="ftps://waws-prod-pn1-003dr.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="my-engagement-tracker\$my-engagement-tracker" userPWD="9ra3hSaknt2qqP8uHfFxAoCRoLMtbnHtP8gXmZ4EE3MGW0bsDSGvPo32a4MR" destinationAppUrl="https://my-engagement-tracker-cbakcva8dpfxb5en.centralindia-01.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile></publishData>'
