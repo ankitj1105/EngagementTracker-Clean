@@ -183,10 +183,106 @@ namespace EngagementTracker.Controllers
                 return StatusCode(500, new { error = "Failed to delete user." });
             }
         }
+        [HttpPost("Admin/UpdateUser")]
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequest req)
+        {
+            try
+            {
+                var role = HttpContext.Session.GetString("role");
+                if (role != "admin") return Unauthorized();
+                
+                if (string.IsNullOrEmpty(req.Uid))
+                    return BadRequest(new { error = "User ID is required" });
+
+                var updateData = new Dictionary<string, object>();
+                if (!string.IsNullOrEmpty(req.Name)) updateData["name"] = req.Name;
+                if (!string.IsNullOrEmpty(req.Email)) updateData["email"] = req.Email;
+                if (!string.IsNullOrEmpty(req.Department)) updateData["department"] = req.Department;
+                
+                // Allow empty strings for section / rollNo if they are clearing it or it's a teacher,
+                // but usually we check if the request provides non-null to update
+                if (req.Section != null) updateData["section"] = req.Section;
+                if (req.RollNo != null) updateData["rollNo"] = req.RollNo;
+
+                if (updateData.Count > 0)
+                {
+                    await _db.Collection("users").Document(req.Uid).UpdateAsync(updateData);
+                }
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating user: {ex.Message}");
+                return StatusCode(500, new { error = "Failed to update user." });
+            }
+        }
+        [HttpPost("Admin/AddUser")]
+        public async Task<IActionResult> AddUser([FromBody] AddUserRequest req)
+        {
+            try
+            {
+                var role = HttpContext.Session.GetString("role");
+                if (role != "admin") return Unauthorized();
+
+                if (string.IsNullOrEmpty(req.Email) || string.IsNullOrEmpty(req.Password) || string.IsNullOrEmpty(req.Role))
+                    return BadRequest(new { error = "Email, Password, and Role are required." });
+
+                // Check if email already exists
+                var existingUser = await _db.Collection("users").WhereEqualTo("email", req.Email).GetSnapshotAsync();
+                if (existingUser.Count > 0)
+                    return BadRequest(new { error = "Email is already in use." });
+
+                var uid = Guid.NewGuid().ToString();
+                var data = new Dictionary<string, object>
+                {
+                    { "name", req.Name ?? "" },
+                    { "email", req.Email },
+                    { "password", req.Password },
+                    { "role", req.Role },
+                    { "department", req.Department ?? "" },
+                    { "createdAt", DateTime.UtcNow.ToString("yyyy-MM-dd") }
+                };
+
+                if (req.Role == "student")
+                {
+                    data["section"] = req.Section ?? "";
+                    data["rollNo"] = req.RollNo ?? "";
+                }
+
+                await _db.Collection("users").Document(uid).SetAsync(data);
+                return Ok(new { success = true, uid });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding user: {ex.Message}");
+                return StatusCode(500, new { error = "Failed to add user." });
+            }
+        }
     }
 
     public class DeleteUserRequest
     {
         public string Uid { get; set; } = "";
+    }
+
+    public class UpdateUserRequest
+    {
+        public string Uid { get; set; } = "";
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Department { get; set; }
+        public string Section { get; set; }
+        public string RollNo { get; set; }
+    }
+    public class AddUserRequest
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string Role { get; set; }
+        public string Department { get; set; }
+        public string Section { get; set; }
+        public string RollNo { get; set; }
     }
 }

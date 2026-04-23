@@ -13,25 +13,120 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        .loader {
-            border: 3px solid var(--bg); border-top: 3px solid var(--primary);
-            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 3rem auto;
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --danger: #ef4444;
+            --success: #10b981;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #cbd5e1;
+            --sidebar-active: #6366f1;
         }
-        @@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .toast {
-            position: fixed; bottom: 2rem; right: 2rem; background: var(--surface);
-            border: 1px solid var(--border); padding: 1rem 2rem; border-radius: 12px; display: flex;
-            align-items: center; gap: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transform: translateY(100px);
-            opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; transition: transform 0.3s ease; }
+        .brand { padding: 24px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border); }
+        .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), #8b5cf6); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+        .brand-text h2 { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 2px; }
+        .brand-text span { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+
+        .nav-menu { padding: 20px 0; flex: 1; overflow-y: auto; }
+        .nav-label { font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; padding: 16px 24px 8px; }
+        .nav-item { padding: 14px 24px; display: flex; align-items: center; gap: 14px; color: var(--sidebar-text); cursor: pointer; transition: all 0.2s; font-size: 0.95rem; font-weight: 500; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: #fff; }
+        .nav-item.active { background: rgba(99, 102, 241, 0.1); color: var(--primary); border-left-color: var(--primary); font-weight: 600; }
+        .nav-item i { width: 20px; text-align: center; font-size: 1.1rem; }
+
+        .user-profile { padding: 20px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem; }
+        .user-info div { font-size: 0.9rem; font-weight: 600; color: #fff; line-height: 1.2; }
+        .user-info span { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+        .logout-btn { margin-left: auto; background: transparent; border: none; color: var(--danger); cursor: pointer; font-size: 1.1rem; padding: 8px; transition: 0.2s; border-radius: 8px; }
+        .logout-btn:hover { background: rgba(239, 68, 68, 0.1); }
+
+        /* Main Content */
+        .main-content { margin-left: 260px; padding: 32px 40px; flex: 1; min-height: 100vh; width: calc(100% - 260px); }
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-size: 1.8rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .page-header p { color: var(--text-muted); font-size: 0.95rem; }
+
+        .section-view { display: none; animation: fadeIn 0.3s ease forwards; }
+        .section-view.active { display: block; }
+        @@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards & Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 20px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: rgba(255,255,255,0.1); }
+        .stat-icon { width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+        .stat-icon.bl { background: rgba(99, 102, 241, 0.1); color: #818cf8; }
+        .stat-icon.pu { background: rgba(168, 85, 247, 0.1); color: #c084fc; }
+        .stat-icon.pi { background: rgba(236, 72, 153, 0.1); color: #f472b6; }
+        .stat-icon.gr { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+        .stat-details h3 { font-size: 2rem; font-weight: 700; color: #fff; line-height: 1.2; }
+        .stat-details p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .glass-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .card-header h3 { font-size: 1.1rem; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 10px; margin: 0; }
+
+        /* Buttons & Inputs */
+        .action-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .action-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .action-btn.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
+        .action-btn.danger:hover { background: var(--danger); color: #fff; }
+        .btn-primary { background: var(--primary); border: none; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; justify-content: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4); }
+
+        .t-input { background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: #fff; padding: 10px 16px; border-radius: 8px; outline: none; transition: 0.2s; font-family: inherit; }
+        .t-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+        
+        .fg { margin-bottom: 16px; }
+        .fg label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .fg input { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: #fff; padding: 12px 16px; border-radius: 8px; outline: none; transition: 0.2s; font-family: inherit; font-size: 0.95rem; }
+        .fg input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+
+        /* Tables */
+        .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 600px; }
+        th { text-align: left; padding: 16px 20px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); }
+        td { padding: 16px 20px; font-size: 0.9rem; color: var(--text-main); border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        /* Badges */
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
+        .badge.blue { background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.2); }
+        .badge.purple { background: rgba(168, 85, 247, 0.1); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.2); }
+        .badge.green { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .badge.red { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        /* Loaders & Toasts */
+        .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 40px auto; }
+        @@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--border); padding: 16px 24px; border-radius: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateY(100px); opacity: 0; transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 2000; color: #fff; font-weight: 500; font-size: 0.95rem; }
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast.success i { color: var(--success); }
         .toast.error i { color: var(--danger); }
-        .nav-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; padding: 1rem 1.5rem 0.5rem; font-weight: 700; }
-        .ambient-glow { display:none; } .ambient-glow-2 { display:none; }
+
+        .empty-state { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; }
+        .empty-state i { font-size: 2rem; margin-bottom: 12px; opacity: 0.5; display: block; }
+
+        /* Responsive */
+        @@media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; width: 100%; padding: 24px; }
+            /* Simple mobile nav toggle can be added, but for now we just make content full width */
+        }
     </style>
-    <link href="~/css/dashboard-theme.css" rel="stylesheet" />
 </head>
 <body>
 
@@ -147,9 +242,13 @@
         <!-- Students Section -->
         <section id="students-section" class="section-view">
             <div class="glass-card">
-                <div class="card-header">
+                <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
                     <h3><i class="fas fa-users" style="color: var(--primary);"></i> Enrolled Students</h3>
-                    <button class="action-btn" onclick="fetchData('students')"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="search-students" placeholder="Search students..." class="t-input" style="width: 200px; padding: 8px 12px; font-size: 0.85rem;" onkeyup="filterTable('students')" />
+                        <button class="action-btn" onclick="fetchData('students')"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        <button class="btn-primary" style="padding: 8px 12px; font-size: 0.85rem;" onclick="openAddModal('student')"><i class="fas fa-plus"></i> Add Student</button>
+                    </div>
                 </div>
                 <div id="students-loader" class="loader"></div>
                 <div class="table-container" id="students-table-container" style="display: none;">
@@ -164,9 +263,13 @@
         <!-- Teachers Section -->
         <section id="teachers-section" class="section-view">
             <div class="glass-card">
-                <div class="card-header">
+                <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
                     <h3><i class="fas fa-briefcase" style="color: #8B5CF6;"></i> Faculty Members</h3>
-                    <button class="action-btn" onclick="fetchData('teachers')"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="search-teachers" placeholder="Search teachers..." class="t-input" style="width: 200px; padding: 8px 12px; font-size: 0.85rem;" onkeyup="filterTable('teachers')" />
+                        <button class="action-btn" onclick="fetchData('teachers')"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        <button class="btn-primary" style="padding: 8px 12px; font-size: 0.85rem;" onclick="openAddModal('teacher')"><i class="fas fa-plus"></i> Add Teacher</button>
+                    </div>
                 </div>
                 <div id="teachers-loader" class="loader"></div>
                 <div class="table-container" id="teachers-table-container" style="display: none;">
@@ -235,6 +338,96 @@
     <div id="toast" class="toast">
         <i class="fas fa-check-circle"></i>
         <span id="toast-msg">Operation successful</span>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div class="glass-card" style="width: 450px; max-width: 90%; margin: 0; position:relative;">
+            <div class="card-header" style="margin-bottom: 15px;">
+                <h3><i class="fas fa-user-edit"></i> Edit Document</h3>
+                <button onclick="closeEditModal()" style="background:transparent; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="edit-user-form" onsubmit="submitUserEdit(event)" style="display:flex; flex-direction:column; gap: 12px;">
+                <input type="hidden" id="edit-uid" />
+                <input type="hidden" id="edit-user-type" />
+                
+                <div class="fg" style="margin-bottom:0;">
+                    <label>Name</label>
+                    <input type="text" id="edit-name" required />
+                </div>
+                
+                <div class="fg" style="margin-bottom:0;">
+                    <label>Email</label>
+                    <input type="email" id="edit-email" required />
+                </div>
+
+                <div class="fg" style="margin-bottom:0;">
+                    <label>Department / Stream</label>
+                    <input type="text" id="edit-department" />
+                </div>
+                
+                <!-- Student Only Fields -->
+                <div id="student-only-fields" style="display:none; flex-direction:column; gap:12px;">
+                    <div class="fg" style="margin-bottom:0;">
+                        <label>Roll No</label>
+                        <input type="text" id="edit-rollno" />
+                    </div>
+                    <div class="fg" style="margin-bottom:0;">
+                        <label>Section</label>
+                        <input type="text" id="edit-section" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top: 5px;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="add-user-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div class="glass-card" style="width: 450px; max-width: 90%; margin: 0; position:relative;">
+            <div class="card-header" style="margin-bottom: 15px;">
+                <h3 id="add-user-title"><i class="fas fa-user-plus"></i> Add User</h3>
+                <button onclick="closeAddModal()" style="background:transparent; border:none; font-size:1.2rem; cursor:pointer; color:var(--text-muted);"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="add-user-form" onsubmit="submitAddUser(event)" style="display:flex; flex-direction:column; gap: 12px;">
+                <input type="hidden" id="add-role" />
+                
+                <div class="fg" style="margin-bottom:0;">
+                    <label>Name</label>
+                    <input type="text" id="add-name" required />
+                </div>
+                
+                <div class="fg" style="margin-bottom:0;">
+                    <label>Email</label>
+                    <input type="email" id="add-email" required />
+                </div>
+                
+                <div class="fg" style="margin-bottom:0;">
+                    <label>Temporary Password</label>
+                    <input type="text" id="add-password" required />
+                </div>
+
+                <div class="fg" style="margin-bottom:0;">
+                    <label>Department / Stream</label>
+                    <input type="text" id="add-department" />
+                </div>
+                
+                <!-- Student Only Fields -->
+                <div id="add-student-fields" style="display:none; flex-direction:column; gap:12px;">
+                    <div class="fg" style="margin-bottom:0;">
+                        <label>Roll No</label>
+                        <input type="text" id="add-rollno" />
+                    </div>
+                    <div class="fg" style="margin-bottom:0;">
+                        <label>Section</label>
+                        <input type="text" id="add-section" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top: 5px;">Create User</button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -330,6 +523,10 @@
                 if (counts[type] !== undefined) {
                     counts[type] = data.length;
                 }
+                
+                // Store globally for editing
+                window.loadedData = window.loadedData || {};
+                window.loadedData[type] = data;
 
                 tbody.innerHTML = '';
                 if (data.length === 0) {
@@ -353,18 +550,24 @@
                 let html = '';
                 if (type === 'students') {
                     html = `<tr>
-                        <td><div style="font-weight:600; color:#fff;">${escapeHtml(item.name)}</div></td>
+                        <td><div style="font-weight:600; color:var(--text-main);">${escapeHtml(item.name)}</div></td>
                         <td>${escapeHtml(item.rollNo)}</td>
                         <td><span class="badge blue">${escapeHtml(item.department)} / ${escapeHtml(item.section)}</span></td>
                         <td>${escapeHtml(item.email)}</td>
-                        <td><button class="action-btn danger" onclick="deleteUser('${item.uid}', 'student')"><i class="fas fa-trash-alt"></i> Delete</button></td>
+                        <td>
+                            <button class="action-btn" style="padding: 6px 12px; margin-right: 4px;" onclick="openEditModal('${item.uid}', 'student')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="action-btn danger" style="padding: 6px 12px;" onclick="deleteUser('${item.uid}', 'student')"><i class="fas fa-trash-alt"></i></button>
+                        </td>
                     </tr>`;
                 } else if (type === 'teachers') {
                     html = `<tr>
-                        <td><div style="font-weight:600; color:#fff;">${escapeHtml(item.name)}</div></td>
+                        <td><div style="font-weight:600; color:var(--text-main);">${escapeHtml(item.name)}</div></td>
                         <td><span class="badge purple">${escapeHtml(item.department)}</span></td>
                         <td>${escapeHtml(item.email)}</td>
-                        <td><button class="action-btn danger" onclick="deleteUser('${item.uid}', 'teacher')"><i class="fas fa-trash-alt"></i> Delete</button></td>
+                        <td>
+                            <button class="action-btn" style="padding: 6px 12px; margin-right: 4px;" onclick="openEditModal('${item.uid}', 'teacher')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="action-btn danger" style="padding: 6px 12px;" onclick="deleteUser('${item.uid}', 'teacher')"><i class="fas fa-trash-alt"></i></button>
+                        </td>
                     </tr>`;
                 } else if (type === 'timetables') {
                     html = `<tr>
@@ -413,6 +616,155 @@
 
         function escapeHtml(str) {
             return (str || "").toString().replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
+        }
+
+        function filterTable(type) {
+            const input = document.getElementById(`search-${type}`).value.toLowerCase();
+            const tbody = document.getElementById(`${type}-tbody`);
+            const rows = tbody.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].querySelector('.empty-state')) continue;
+                const text = rows[i].innerText.toLowerCase();
+                if (text.indexOf(input) > -1) rows[i].style.display = '';
+                else rows[i].style.display = 'none';
+            }
+        }
+
+        function openEditModal(uid, type) {
+            const users = window.loadedData[type + 's'];
+            const user = users ? users.find(u => u.uid === uid) : null;
+            if (!user) return;
+
+            document.getElementById('edit-uid').value = uid;
+            document.getElementById('edit-user-type').value = type;
+            document.getElementById('edit-name').value = user.name || '';
+            document.getElementById('edit-email').value = user.email || '';
+            document.getElementById('edit-department').value = user.department || '';
+            
+            if (type === 'student') {
+                document.getElementById('student-only-fields').style.display = 'flex';
+                document.getElementById('edit-rollno').value = user.rollNo || '';
+                document.getElementById('edit-section').value = user.section || '';
+            } else {
+                document.getElementById('student-only-fields').style.display = 'none';
+            }
+            
+            const modal = document.getElementById('edit-user-modal');
+            modal.style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-user-modal').style.display = 'none';
+        }
+
+        async function submitUserEdit(e) {
+            e.preventDefault();
+            const uid = document.getElementById('edit-uid').value;
+            const type = document.getElementById('edit-user-type').value;
+            const name = document.getElementById('edit-name').value;
+            const email = document.getElementById('edit-email').value;
+            const department = document.getElementById('edit-department').value;
+            
+            let data = { uid, name, email, department };
+            
+            if (type === 'student') {
+                data.rollNo = document.getElementById('edit-rollno').value;
+                data.section = document.getElementById('edit-section').value;
+            }
+
+            try {
+                const btn = e.target.querySelector('button');
+                const oldText = btn.innerText;
+                btn.innerText = 'Saving...';
+                btn.disabled = true;
+
+                const res = await fetch('/Admin/UpdateUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                btn.innerText = oldText;
+                btn.disabled = false;
+
+                if (res.ok) {
+                    showToast('User updated successfully!');
+                    closeEditModal();
+                    fetchData(type + 's');
+                } else {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Failed to update');
+                }
+            } catch (error) {
+                showToast(error.message, true);
+                const btn = e.target.querySelector('button');
+                btn.innerText = 'Save Changes';
+                btn.disabled = false;
+            }
+        }
+
+        function openAddModal(role) {
+            document.getElementById('add-user-form').reset();
+            document.getElementById('add-role').value = role;
+            document.getElementById('add-user-title').innerHTML = `<i class="fas fa-user-plus"></i> Add ${role === 'student' ? 'Student' : 'Teacher'}`;
+            
+            if (role === 'student') {
+                document.getElementById('add-student-fields').style.display = 'flex';
+            } else {
+                document.getElementById('add-student-fields').style.display = 'none';
+            }
+            document.getElementById('add-user-modal').style.display = 'flex';
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-user-modal').style.display = 'none';
+        }
+
+        async function submitAddUser(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const oldText = btn.innerText;
+            btn.innerText = 'Creating...';
+            btn.disabled = true;
+
+            const role = document.getElementById('add-role').value;
+            const data = {
+                name: document.getElementById('add-name').value,
+                email: document.getElementById('add-email').value,
+                password: document.getElementById('add-password').value,
+                department: document.getElementById('add-department').value,
+                role: role
+            };
+
+            if (role === 'student') {
+                data.rollNo = document.getElementById('add-rollno').value;
+                data.section = document.getElementById('add-section').value;
+            }
+
+            try {
+                const res = await fetch('/Admin/AddUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                btn.innerText = oldText;
+                btn.disabled = false;
+
+                if (res.ok) {
+                    showToast('User created successfully!');
+                    closeAddModal();
+                    fetchData(role + 's');
+                } else {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Failed to create user');
+                }
+            } catch (error) {
+                showToast(error.message, true);
+                btn.innerText = oldText;
+                btn.disabled = false;
+            }
         }
     </script>
 </body>

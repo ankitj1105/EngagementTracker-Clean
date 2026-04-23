@@ -159,6 +159,27 @@ public class AuthController : Controller
         });
     }
 
+    [HttpGet("Auth/SeedAdmin")]
+    public async Task<IActionResult> SeedAdmin()
+    {
+        var snap = await _db.Collection("users").WhereEqualTo("role", "admin").GetSnapshotAsync();
+        if (snap.Count == 0)
+        {
+            var adminId = Guid.NewGuid().ToString();
+            var data = new Dictionary<string, object>
+            {
+                { "name", "Super Admin" },
+                { "email", "admin@admin.com" },
+                { "password", "admin123" },
+                { "role", "admin" },
+                { "createdAt", DateTime.UtcNow.ToString("yyyy-MM-dd") }
+            };
+            await _db.Collection("users").Document(adminId).SetAsync(data);
+            return Ok("Admin created. Email: admin@admin.com, Password: admin123");
+        }
+        return Ok("Admin already exists. Use the existing admin account.");
+    }
+
     public IActionResult Logout()
     {
         HttpContext.Session.Clear();
