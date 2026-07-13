@@ -9,7 +9,6 @@ public class AttendanceController : Controller
     private readonly AttendanceService _svc;
     public AttendanceController(AttendanceService svc) { _svc = svc; }
 
-    // Student gets their own attendance
     [HttpGet]
     public async Task<IActionResult> GetMyAttendance()
     {
@@ -32,7 +31,6 @@ public class AttendanceController : Controller
         return Ok(summary);
     }
 
-    // Teacher marks attendance
     [HttpPost]
     public async Task<IActionResult> Mark([FromBody] MarkRequest req)
     {

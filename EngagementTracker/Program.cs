@@ -7,13 +7,10 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    // 🔥 HANDLE FIREBASE CONFIG (LOCAL + AZURE)
     string firebaseJson;
 
-    // 1️⃣ Try ENV (Azure)
     firebaseJson = Environment.GetEnvironmentVariable("FIREBASE_JSON");
 
-    // 2️⃣ If not found → use local file
     if (string.IsNullOrEmpty(firebaseJson))
     {
         var path = Path.Combine(Directory.GetCurrentDirectory(), "firebase-credentials.json");
@@ -24,13 +21,10 @@ try
         firebaseJson = File.ReadAllText(path);
     }
 
-    // 🔥 Fix newline issue (important for Azure ENV)
     firebaseJson = firebaseJson.Replace("\\n", "\n");
 
-    // 🔥 Create credential ONCE
     var credential = GoogleCredential.FromJson(firebaseJson);
 
-    // 🔥 Initialize Firebase (safe)
     if (FirebaseApp.DefaultInstance == null)
     {
         FirebaseApp.Create(new AppOptions()
@@ -39,7 +33,6 @@ try
         });
     }
 
-    // 🔥 FIXED Firestore initialization (NO MORE ADC ERROR)
     var firestoreDb = new FirestoreDbBuilder
     {
         ProjectId = "studentengagementtracker",
@@ -48,7 +41,6 @@ try
 
     builder.Services.AddSingleton(firestoreDb);
 
-    // 🔥 Session
     builder.Services.AddDistributedMemoryCache();
     builder.Services.AddSession(options =>
     {
@@ -59,7 +51,6 @@ try
 
     builder.Services.AddControllersWithViews();
 
-    // 🔥 Your Services
     builder.Services.AddScoped<FirebaseAuthService>();
     builder.Services.AddScoped<AttendanceService>();
     builder.Services.AddScoped<MarksService>();
@@ -74,7 +65,6 @@ try
 
     var app = builder.Build();
 
-    // 🔥 Error handler
     app.UseExceptionHandler(a => a.Run(async context =>
     {
         context.Response.ContentType = "application/json";
@@ -98,7 +88,6 @@ try
 }
 catch (Exception ex)
 {
-    // 🔥 WRITE ERROR TO FILE (CRITICAL FOR DEBUGGING)
     try
     {
         File.WriteAllText("startup-error.txt", ex.ToString());

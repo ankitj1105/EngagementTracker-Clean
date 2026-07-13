@@ -10,10 +10,8 @@ public class AssignmentController : Controller
     private readonly AssignmentService _svc;
     public AssignmentController(AssignmentService svc) { _svc = svc; }
 
-    // Get all assignments (both student and teacher)
    
 
-    // Teacher creates assignment
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] AssignmentModel model)
     {
@@ -23,7 +21,6 @@ public class AssignmentController : Controller
         return ok ? Ok() : BadRequest((object)new { error = "Failed to create" });
     }
 
-    // Student submits
     [HttpPost]
     public async Task<IActionResult> Submit([FromBody] SubmitRequest req)
     {
@@ -42,7 +39,6 @@ public class AssignmentController : Controller
         return ok ? Ok() : BadRequest((object)new { error = "Failed to submit" });
     }
 
-    // Get my submissions (student)
     [HttpGet]
     public async Task<IActionResult> GetMySubmissions()
     {
@@ -52,7 +48,6 @@ public class AssignmentController : Controller
         return Ok(list);
     }
 
-    // Get submissions for assignment (teacher)
     [HttpGet]
     public async Task<IActionResult> GetSubmissions(string assignmentId)
     {
@@ -68,7 +63,6 @@ public class AssignmentController : Controller
         return Ok(list);
     }
 
-    // Teacher grades submission
     [HttpPost]
     public async Task<IActionResult> Grade([FromBody] GradeRequest req)
     {

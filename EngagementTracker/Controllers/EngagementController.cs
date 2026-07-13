@@ -9,7 +9,6 @@ public class EngagementController : Controller
     private readonly EngagementService _svc;
     public EngagementController(EngagementService svc) { _svc = svc; }
 
-    // Student sends a webcam frame for analysis
     [HttpPost]
     public async Task<IActionResult> Analyze([FromBody] FrameRequest req)
     {
@@ -28,7 +27,6 @@ public class EngagementController : Controller
         return Ok(new { score, faceDetected });
     }
 
-    // Teacher gets all student summaries
     [HttpGet]
     public async Task<IActionResult> GetSummaries()
     {

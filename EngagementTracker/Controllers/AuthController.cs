@@ -22,6 +22,9 @@ public class AuthController : Controller
 
     [HttpPost]
     public IActionResult Login(LoginViewModel model) => View(model);
+
+    [HttpGet]
+    public IActionResult Demo() => View();
     
     [HttpPost]
     public async Task<IActionResult> LoginUser([FromBody] LoginViewModel model)

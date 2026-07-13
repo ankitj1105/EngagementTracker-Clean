@@ -66,7 +66,6 @@ public class FaceAttendanceController : Controller
 
         return Ok(results);
     }
-    // Get student's stored photo (for verification preview)
     [HttpGet]
     public async Task<IActionResult> GetStudentPhotos()
     {

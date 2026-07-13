@@ -15,7 +15,6 @@ namespace EngagementTracker.Controllers
             _db = db;
         }
 
-        // ─── PAGE ACTIONS ──────────────────────────────────────────────
 
         [HttpGet("Admin/Dashboard")]
         public IActionResult Dashboard()
@@ -31,7 +30,6 @@ namespace EngagementTracker.Controllers
             return View();
         }
 
-        // ─── API ENDPOINTS ─────────────────────────────────────────────
 
         [HttpGet("Admin/GetAllStudents")]
         public async Task<IActionResult> GetAllStudents()
@@ -228,7 +226,6 @@ namespace EngagementTracker.Controllers
                 if (string.IsNullOrEmpty(req.Email) || string.IsNullOrEmpty(req.Password) || string.IsNullOrEmpty(req.Role))
                     return BadRequest(new { error = "Email, Password, and Role are required." });
 
-                // Check if email already exists
                 var existingUser = await _db.Collection("users").WhereEqualTo("email", req.Email).GetSnapshotAsync();
                 if (existingUser.Count > 0)
                     return BadRequest(new { error = "Email is already in use." });

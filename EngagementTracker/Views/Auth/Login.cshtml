@@ -13,7 +13,6 @@ html,body{height:100%;overflow:hidden;}
 body{font-family:'Inter',sans-serif;background:#0e0e1a;}
 .page{display:flex;width:100vw;height:100vh;overflow:hidden;}
 
-/* LEFT PANEL */
 .illus{
   flex:0 0 58%;
   position:relative;
@@ -21,7 +20,6 @@ body{font-family:'Inter',sans-serif;background:#0e0e1a;}
   background:linear-gradient(160deg,#13132a 0%,#1a1535 50%,#0f1f2e 100%);
 }
 
-/* Subtle grid */
 .illus::before{
   content:'';position:absolute;inset:0;z-index:0;
   background-image:
@@ -30,10 +28,8 @@ body{font-family:'Inter',sans-serif;background:#0e0e1a;}
   background-size:40px 40px;
 }
 
-/* Glow orbs */
 .orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none;z-index:0;}
 
-/* App name at top */
 .illus-text{
   position:absolute;top:7%;left:0;right:0;
   text-align:center;z-index:10;
@@ -45,30 +41,25 @@ body{font-family:'Inter',sans-serif;background:#0e0e1a;}
 }
 .illus-text p{font-size:.82rem;color:rgba(255,255,255,.45);margin-top:.4rem;}
 
-/* THE IMAGE — pinned to bottom, fills left panel width */
 .student-img{
   position:absolute;
   bottom:0;
   left:0;right:0;
   z-index:5;
   width:100%;
-  /* The image has white bg — blend it into the dark panel */
   mix-blend-mode:luminosity;
   opacity:.97;
-  /* Show only bottom 75% so top white space is hidden */
   object-fit:cover;
   object-position:bottom center;
   height:78%;
   filter:drop-shadow(0 0 0 transparent);
 }
 
-/* Thin purple ground line */
 .ground-line{
   position:absolute;bottom:0;left:0;right:0;
   height:3px;background:#7c3aed;opacity:.35;z-index:6;
 }
 
-/* RIGHT FORM PANEL */
 .form-panel{
   flex:0 0 42%;background:#16162a;
   display:flex;align-items:center;justify-content:center;
@@ -150,6 +141,7 @@ input::placeholder{color:rgba(255,255,255,.2);}
       <div class="fg"><label>Email address</label><input id="email" type="email" placeholder="Email" /></div>
       <div class="fg"><label>Password</label><input id="password" type="password" placeholder="Enter your password"/></div>
       <button type="button" class="btn" onclick="loginUser()">Sign In</button>
+      <a href="/Auth/Demo" style="display:block; text-align:center; margin-top:1.2rem; color:rgba(255,255,255,.65); text-decoration:none; font-size:.85rem; font-weight:600; border:1px dashed rgba(139,92,246,.5); padding:10px; border-radius:10px; background:rgba(139,92,246,.05); transition:all 0.2s;" onmouseover="this.style.background='rgba(139,92,246,.15)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(139,92,246,.05)'; this.style.color='rgba(255,255,255,.65)';">✨ Try Application Demo &amp; Guided Tour</a>
       <div class="divr">or</div>
       <div class="foot">Don't have an account? <a href="/Auth/Register">Register here</a></div>
     </div>
@@ -169,11 +161,9 @@ async function loginUser() {
     btn.style.opacity = '.7';
 
     try {
-        // Sign in with Firebase
         const cred = await window.firebaseLoginUser(email, password);
         const token = await cred.user.getIdToken();
 
-        // Verify token with backend
         const res = await fetch('/Auth/VerifyToken', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -201,7 +191,6 @@ async function loginUser() {
     } catch (e) {
         console.error("Firebase Login Failed:", e);
 
-        // Fallback for legacy users (e.g. manually created Admins in Firestore)
         if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === undefined) {
              try {
                 const legacyRes = await fetch('/Auth/LoginUser', {
@@ -229,7 +218,6 @@ async function loginUser() {
              }
         }
 
-        // Map Firebase error codes to readable messages if fallback also fails
         let errorMsg = e.message;
         if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
             errorMsg = 'Invalid credentials';
