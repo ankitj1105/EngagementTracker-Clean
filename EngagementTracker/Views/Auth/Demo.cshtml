@@ -12,7 +12,6 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
-      /* Shared color tokens */
       --primary: #5b37b7;
       --primary-hover: #4e2ea3;
       --accent: #7b59d9;
@@ -25,11 +24,9 @@
       --border: #f1f3f9;
       --card-shadow: 0 10px 30px rgba(112, 144, 176, 0.08);
       
-      /* Light theme page background */
       --page-bg: #f4f7fe;
       --card-bg: #ffffff;
       
-      /* Dark theme mappings for Admin Hub */
       --admin-bg: #0b0e19;
       --admin-card-bg: #151a30;
       --admin-text-main: #ffffff;
@@ -46,7 +43,6 @@
       transition: background 0.3s, color 0.3s;
     }
     
-    /* Dark mode toggle helper class */
     body.dark-mode {
       background: var(--admin-bg);
       color: var(--admin-text-main);
@@ -194,7 +190,7 @@
     }
     .brand-sub {
       font-size: 0.7rem;
-      color: var(--sidebar-text);
+      color: rgba(255, 255, 255, 0.6);
       margin-top: 2px;
     }
 
@@ -238,7 +234,7 @@
     body.dark-mode .nav a.active {
       background: rgba(79, 70, 229, 0.15);
       border-left-color: #4f46e5;
-      color: #7b59d9;
+      color: #fff;
     }
 
     .nav-icon {
@@ -542,20 +538,6 @@
       border-bottom: none;
     }
 
-    .student-avatar {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #fafafa;
-      border: 1.5px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--primary);
-    }
-
     /* Badges */
     .badge {
       font-size: 0.75rem;
@@ -841,6 +823,70 @@
     .portal-content.active {
       display: block;
     }
+    
+    .section-pane {
+      display: none;
+      animation: tabFadeIn 0.3s ease-out;
+    }
+    .section-pane.active {
+      display: block;
+    }
+    @@keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Styles for interactive inputs/grids */
+    .form-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+    }
+    
+    /* Drag & drop mock */
+    .file-drop-zone {
+      border: 2px dashed var(--accent);
+      background: #fafbff;
+      border-radius: 12px;
+      padding: 2.5rem;
+      text-align: center;
+      margin-top: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .file-drop-zone:hover {
+      background: #f1eeff;
+      border-color: var(--primary);
+    }
+
+    /* CSS Bar Chart simulator */
+    .chart-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 1rem;
+    }
+    .chart-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 50px;
+      align-items: center;
+      gap: 15px;
+    }
+    .chart-label {
+      font-size: 0.83rem;
+      font-weight: 700;
+    }
+    .chart-bar-bg {
+      height: 12px;
+      background: #f1f3f9;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .chart-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body>
@@ -876,33 +922,33 @@
       </div>
       <div class="nav">
         <div class="nav-section">Main</div>
-        <a class="active demo-tour-item" data-tour-title="Student Dashboard Overview" data-tour-desc="A centralized console tracking your semester metrics, current lecture feeds, direct quiz join cards, and academic statistics.">
+        <a class="active demo-tour-item" onclick="switchTab('student', 'dashboard', this)" data-tour-title="Student Dashboard Overview" data-tour-desc="A centralized console tracking your semester metrics, current lecture feeds, direct quiz join cards, and academic statistics.">
           <span class="nav-icon">⚡</span>Dashboard
         </a>
-        <a class="demo-tour-item" data-tour-title="Attendance Records" data-tour-desc="Shows daily presence logs, calendar heatmaps, and warning indicators when counts drop below university limits.">
+        <a class="demo-tour-item" onclick="switchTab('student', 'attendance', this)" data-tour-title="Attendance Records" data-tour-desc="Shows daily presence logs, calendar heatmaps, and warning indicators when counts drop below university limits.">
           <span class="nav-icon">📅</span>Attendance
         </a>
-        <a class="demo-tour-item" data-tour-title="Marks &amp; GPA" data-tour-desc="Lists subject marks, grade reports, and calculates overall GPA trends.">
+        <a class="demo-tour-item" onclick="switchTab('student', 'marks', this)" data-tour-title="Marks &amp; GPA" data-tour-desc="Lists subject marks, grade reports, and calculates overall GPA trends.">
           <span class="nav-icon">🎓</span>Marks &amp; GPA
         </a>
-        <a class="demo-tour-item" data-tour-title="Assignments Workspace" data-tour-desc="Workspace showing active coursework assignments, files, submit deadlines, and upload zones.">
+        <a class="demo-tour-item" onclick="switchTab('student', 'assignments', this)" data-tour-title="Assignments Workspace" data-tour-desc="Workspace showing active coursework assignments, files, submit deadlines, and upload zones.">
           <span class="nav-icon">📂</span>Assignments
         </a>
-        <a class="demo-tour-item" data-tour-title="Engagement Analytics" data-tour-desc="A detail page breaking down your attention gaze graphs, face scanner detection scores, and active class participation rates.">
+        <a class="demo-tour-item" onclick="switchTab('student', 'engagement', this)" data-tour-title="Engagement Analytics" data-tour-desc="A detail page breaking down your attention gaze graphs, face scanner detection scores, and active class participation rates.">
           <span class="nav-icon">📹</span>Engagement
         </a>
-        <a class="demo-tour-item" data-tour-title="Class Timetable" data-tour-desc="Shows your section's scheduled class timetable and current active session durations.">
+        <a class="demo-tour-item" onclick="switchTab('student', 'timetable', this)" data-tour-title="Class Timetable" data-tour-desc="Shows your section's scheduled class timetable and current active session durations.">
           <span class="nav-icon">🗓️</span>Timetable
         </a>
         
         <div class="nav-section">Other</div>
-        <a class="demo-tour-item" data-tour-title="Notifications Centre" data-tour-desc="Review warning notifications, class announcements, or alert alerts from teachers.">
+        <a class="demo-tour-item" onclick="switchTab('student', 'notifications', this)" data-tour-title="Notifications Centre" data-tour-desc="Review warning notifications, class announcements, or alert alerts from teachers.">
           <span class="nav-icon">🔔</span>Notifications <span class="nav-badge">3</span>
         </a>
-        <a class="demo-tour-item" data-tour-title="Student Profile" data-tour-desc="Review registered student registration codes, section names, and register your face photo.">
+        <a class="demo-tour-item" onclick="switchTab('student', 'profile', this)" data-tour-title="Student Profile" data-tour-desc="Review registered student registration codes, section names, and register your face photo.">
           <span class="nav-icon">👤</span>My Profile
         </a>
-        <a class="demo-tour-item" data-tour-title="Live Quiz Dashboard" data-tour-desc="Launches active web quizzes started by teachers for live interaction.">
+        <a class="demo-tour-item" onclick="switchTab('student', 'quiz', this)" data-tour-title="Live Quiz Dashboard" data-tour-desc="Launches active web quizzes started by teachers for live interaction.">
           <span class="nav-icon">🎮</span>Live Quiz
         </a>
       </div>
@@ -922,33 +968,33 @@
       </div>
       <div class="nav">
         <div class="nav-section">Main</div>
-        <a class="active demo-tour-item" data-tour-title="Teacher Dashboard Console" data-tour-desc="Aggregates classroom numbers, average student attendance rates, warning indexes, and class scheduler shortcuts.">
+        <a class="active demo-tour-item" onclick="switchTab('teacher', 'dashboard', this)" data-tour-title="Teacher Dashboard Console" data-tour-desc="Aggregates classroom numbers, average student attendance rates, warning indexes, and class scheduler shortcuts.">
           <span class="nav-icon">⚡</span>Dashboard
         </a>
-        <a class="demo-tour-item" data-tour-title="All Students registry" data-tour-desc="Directory listing all registered students in your classes, with profiles and direct warning dispatch options.">
+        <a class="demo-tour-item" onclick="switchTab('teacher', 'students', this)" data-tour-title="All Students registry" data-tour-desc="Directory listing all registered students in your classes, with profiles and direct warning dispatch options.">
           <span class="nav-icon">👥</span>All Students
         </a>
-        <a class="demo-tour-item" data-tour-title="AI Face Attendance Marker" data-tour-desc="Launch camera streams to automatically scan student faces and register attendance.">
+        <a class="demo-tour-item" onclick="switchTab('teacher', 'attendance', this)" data-tour-title="AI Face Attendance Marker" data-tour-desc="Launch camera streams to automatically scan student faces and register attendance.">
           <span class="nav-icon">📹</span>Mark Attendance
         </a>
-        <a class="demo-tour-item" data-tour-title="Enter Marks" data-tour-desc="Gradebook workspace to select subjects and directly input midterm, endterm, or assignment scores.">
+        <a class="demo-tour-item" onclick="switchTab('teacher', 'marks', this)" data-tour-title="Enter Marks" data-tour-desc="Gradebook workspace to select subjects and directly input midterm, endterm, or assignment scores.">
           <span class="nav-icon">📝</span>Enter Marks
         </a>
-        <a class="demo-tour-item" data-tour-title="Manage Timetables" data-tour-desc="Configure class timings, reschedule sessions, and view your upcoming teaching slots.">
+        <a class="demo-tour-item" onclick="switchTab('teacher', 'timetable', this)" data-tour-title="Manage Timetables" data-tour-desc="Configure class timings, reschedule sessions, and view your upcoming teaching slots.">
           <span class="nav-icon">🗓️</span>Manage Timetables
         </a>
         
         <div class="nav-section">Reports</div>
-        <a class="demo-tour-item" data-tour-title="At-Risk Alerts Screen" data-tour-desc="Lists students whose attendance or grades have fallen below critical levels, enabling direct support interventions.">
+        <a class="demo-tour-item" onclick="switchTab('teacher', 'risk', this)" data-tour-title="At-Risk Alerts Screen" data-tour-desc="Lists students whose attendance or grades have fallen below critical levels, enabling direct support interventions.">
           <span class="nav-icon">⚠️</span>At-Risk Students
         </a>
-        <a class="demo-tour-item" data-tour-title="Assignments Manager" data-tour-desc="Create new homework assignments, upload reference files, and review student submissions.">
+        <a class="demo-tour-item" onclick="switchTab('teacher', 'assignments', this)" data-tour-title="Assignments Manager" data-tour-desc="Create new homework assignments, upload reference files, and review student submissions.">
           <span class="nav-icon">📂</span>Assignments
         </a>
-        <a class="demo-tour-item" data-tour-title="Real-Time Gaze Analytics" data-tour-desc="Review detailed gaze scores, attention logs, and focus timelines of active class streams.">
+        <a class="demo-tour-item" onclick="switchTab('teacher', 'engagement', this)" data-tour-title="Real-Time Gaze Analytics" data-tour-desc="Review detailed gaze scores, attention logs, and focus timelines of active class streams.">
           <span class="nav-icon">📊</span>Engagement
         </a>
-        <a class="demo-tour-item" data-tour-title="Create Live Quiz" data-tour-desc="Launches interactive multiplayer class quizzes for live testing.">
+        <a class="demo-tour-item" onclick="switchTab('teacher', 'quiz', this)" data-tour-title="Create Live Quiz" data-tour-desc="Launches interactive multiplayer class quizzes for live testing.">
           <span class="nav-icon">🎮</span>Live Quiz
         </a>
       </div>
@@ -968,26 +1014,26 @@
       </div>
       <div class="nav">
         <div class="nav-section">Main</div>
-        <a class="active demo-tour-item" data-tour-title="Admin Overview Dashboard" data-tour-desc="Aggregates system-wide analytics: total registered students, faculty sizes, class counts, and attendance databases.">
+        <a class="active demo-tour-item" onclick="switchTab('admin', 'overview', this)" data-tour-title="Admin Overview Dashboard" data-tour-desc="Aggregates system-wide analytics: total registered students, faculty sizes, class counts, and attendance databases.">
           <span class="nav-icon">⚡</span>Overview
         </a>
         
         <div class="nav-section">Directory</div>
-        <a class="demo-tour-item" data-tour-title="Manage Students" data-tour-desc="Global index to monitor, edit details, or remove student registrations from the database.">
+        <a class="demo-tour-item" onclick="switchTab('admin', 'students', this)" data-tour-title="Manage Students" data-tour-desc="Global index to monitor, edit details, or remove student registrations from the database.">
           <span class="nav-icon">👥</span>Students
         </a>
-        <a class="demo-tour-item" data-tour-title="Manage Teachers" data-tour-desc="Register new faculty accounts, assign course subjects, and manage access profiles.">
+        <a class="demo-tour-item" onclick="switchTab('admin', 'teachers', this)" data-tour-title="Manage Teachers" data-tour-desc="Register new faculty accounts, assign course subjects, and manage access profiles.">
           <span class="nav-icon">💼</span>Teachers
         </a>
         
         <div class="nav-section">Platform Master Data</div>
-        <a class="demo-tour-item" data-tour-title="Master Timetables" data-tour-desc="Central class timing configuration grid across all sections, departments, and semesters.">
+        <a class="demo-tour-item" onclick="switchTab('admin', 'timetables', this)" data-tour-title="Master Timetables" data-tour-desc="Central class timing configuration grid across all sections, departments, and semesters.">
           <span class="nav-icon">🗓️</span>Master Timetables
         </a>
-        <a class="demo-tour-item" data-tour-title="Global Attendance Log" data-tour-desc="Audit trail showing every attendance record registered via face-scanners or manual logs.">
+        <a class="demo-tour-item" onclick="switchTab('admin', 'attendance', this)" data-tour-title="Global Attendance Log" data-tour-desc="Audit trail showing every attendance record registered via face-scanners or manual logs.">
           <span class="nav-icon">📝</span>Global Attendance
         </a>
-        <a class="demo-tour-item" data-tour-title="Student Academic Records" data-tour-desc="Global review panel of student grades, overall averages, GPAs, and class rankings.">
+        <a class="demo-tour-item" onclick="switchTab('admin', 'records', this)" data-tour-title="Student Academic Records" data-tour-desc="Global review panel of student grades, overall averages, GPAs, and class rankings.">
           <span class="nav-icon">⭐</span>Student Records
         </a>
       </div>
@@ -1006,181 +1052,494 @@
       <div id="portal-student" class="portal-content active">
         <div class="topbar">
           <div class="topbar-left">
-            <h4>Dashboard</h4>
+            <h4 id="student-page-title">Dashboard</h4>
             <p>Welcome back, Ankit Kumar Jha 👋</p>
           </div>
           <div class="topbar-right">
-            <div class="bell-btn demo-tour-item" data-tour-title="Notifications Bell" data-tour-desc="Flashes when there are updates from teachers, quiz links, or low attendance warnings.">🔔</div>
-            <div class="user-chip demo-tour-item" data-tour-title="Student User Profile" data-tour-desc="Displays the logged-in student's avatar and name. Select to view credentials and registered photo logs.">
+            <div class="bell-btn demo-tour-item" onclick="document.querySelector('#sidebar-student a[onclick*=\'notifications\']').click()" data-tour-title="Notifications Bell" data-tour-desc="Flashes when there are updates from teachers, quiz links, or low attendance warnings.">🔔</div>
+            <div class="user-chip demo-tour-item" onclick="document.querySelector('#sidebar-student a[onclick*=\'profile\']').click()" data-tour-title="Student User Profile" data-tour-desc="Displays the logged-in student's avatar and name. Select to view credentials and registered photo logs.">
               <div class="user-avatar" style="background: #4f46e5;">A</div>Ankit Kumar Jha
             </div>
           </div>
         </div>
 
-        <!-- Dynamic Live Class Alert (Hidden initially, visible if Teacher starts class) -->
+        <!-- Dynamic Live Class Alert -->
         <div class="live-alert-card demo-tour-item" id="student-live-alert" style="display:none;" data-tour-title="Dynamic Live Class Banner" data-tour-desc="Appears instantly when a teacher clicks 'Start Class' on the Teacher dashboard. Links students to the camera verification stream.">
           <div class="live-alert-text">
             <h3><span class="live-alert-dot"></span> Lecture Live Now: Intro to DSA</h3>
             <p>Mark attendance and launch real-time face tracking logs.</p>
           </div>
-          <button class="live-alert-btn" onclick="alert('Demo Attendance Registered via Face Scanner! Mocking verified attendance log...')">Join Live Class</button>
+          <button class="live-alert-btn" onclick="document.querySelector('#sidebar-student a[onclick*=\'engagement\']').click()">Join Live Class</button>
         </div>
 
-        <div class="stat-grid">
-          <div class="stat-card demo-tour-item" data-tour-title="Attendance Score Card" data-tour-desc="Your cumulative class presence percentage. Calculated from checked logs.">
-            <div class="stat-icon pu">📅</div>
-            <div class="stat-details">
-              <h3>100%</h3>
-              <p>Avg Attendance</p>
-              <div class="stat-badge" style="color: var(--success);">✅ Good</div>
-              <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 100%; background: var(--primary);"></div></div>
+        <!-- SECTION: Dashboard -->
+        <div id="student-sec-dashboard" class="section-pane active">
+          <div class="stat-grid">
+            <div class="stat-card demo-tour-item" data-tour-title="Attendance Score Card" data-tour-desc="Your cumulative class presence percentage. Calculated from checked logs.">
+              <div class="stat-icon pu">📅</div>
+              <div class="stat-details">
+                <h3>100%</h3>
+                <p>Avg Attendance</p>
+                <div class="stat-badge" style="color: var(--success);">✅ Good</div>
+                <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 100%; background: var(--primary);"></div></div>
+              </div>
+            </div>
+            <div class="stat-card demo-tour-item" data-tour-title="GPA Score Card" data-tour-desc="Overall score average calculated from midterms, quizzes, and project grades.">
+              <div class="stat-icon pu">🎓</div>
+              <div class="stat-details">
+                <h3>5.0</h3>
+                <p>Overall GPA</p>
+                <div class="stat-badge" style="color: var(--accent);">📈 OK</div>
+                <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 80%; background: var(--accent);"></div></div>
+              </div>
+            </div>
+            <div class="stat-card demo-tour-item" data-tour-title="Classes Present Card" data-tour-desc="Running tally of classroom attendances against total conducted sessions.">
+              <div class="stat-icon gr">✅</div>
+              <div class="stat-details">
+                <h3>9/9</h3>
+                <p>Classes Present</p>
+                <div class="stat-badge" style="color: var(--success);">9 classes</div>
+                <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 100%; background: var(--success);"></div></div>
+              </div>
+            </div>
+            <div class="stat-card demo-tour-item" data-tour-title="Pending Assignments Card" data-tour-desc="Pending tasks requiring uploads or documents. Currently completely clean.">
+              <div class="stat-icon or">📂</div>
+              <div class="stat-details">
+                <h3>0</h3>
+                <p>Assignments</p>
+                <div class="stat-badge" style="color: var(--success);">✅ Done</div>
+                <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 0%; background: var(--warning);"></div></div>
+              </div>
             </div>
           </div>
-          <div class="stat-card demo-tour-item" data-tour-title="GPA Score Card" data-tour-desc="Overall score average calculated from midterms, quizzes, and project grades.">
-            <div class="stat-icon pu">🎓</div>
-            <div class="stat-details">
-              <h3>5.0</h3>
-              <p>Overall GPA</p>
-              <div class="stat-badge" style="color: var(--accent);">📈 OK</div>
-              <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 80%; background: var(--accent);"></div></div>
+
+          <div class="dashboard-grid">
+            <div class="card demo-tour-item" data-tour-title="Recent Attendance list" data-tour-desc="Timeline showing date records and verified status of classes attended.">
+              <div class="card-header-row">
+                <div class="card-title">📅 Recent Attendance</div>
+                <a class="card-link" onclick="document.querySelector('#sidebar-student a[onclick*=\'attendance\']').click()">View all →</a>
+              </div>
+              <div class="table-container">
+                <table>
+                  <tbody>
+                    <tr>
+                      <td><strong>2026-04-22</strong><div style="font-size:0.75rem; color:var(--text-muted);">ML</div></td>
+                      <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>2026-05-29</strong><div style="font-size:0.75rem; color:var(--text-muted);">DSA</div></td>
+                      <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>2026-05-04</strong><div style="font-size:0.75rem; color:var(--text-muted);">DSA</div></td>
+                      <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>2026-04-04</strong><div style="font-size:0.75rem; color:var(--text-muted);">DSA</div></td>
+                      <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>2026-04-08</strong><div style="font-size:0.75rem; color:var(--text-muted);">C# > NET</div></td>
+                      <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-          <div class="stat-card demo-tour-item" data-tour-title="Classes Present Card" data-tour-desc="Running tally of classroom attendances against total conducted sessions.">
-            <div class="stat-icon gr">✅</div>
-            <div class="stat-details">
-              <h3>9/9</h3>
-              <p>Classes Present</p>
-              <div class="stat-badge" style="color: var(--success);">9 classes</div>
-              <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 100%; background: var(--success);"></div></div>
-            </div>
-          </div>
-          <div class="stat-card demo-tour-item" data-tour-title="Pending Assignments Card" data-tour-desc="Pending tasks requiring uploads or documents. Currently completely clean.">
-            <div class="stat-icon or">📂</div>
-            <div class="stat-details">
-              <h3>0</h3>
-              <p>Assignments</p>
-              <div class="stat-badge" style="color: var(--success);">✅ Done</div>
-              <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 0%; background: var(--warning);"></div></div>
+
+            <div class="card demo-tour-item" data-tour-title="Subject-wise GPA list" data-tour-desc="Details your grade records subject-wise. Shows GPA rankings for separate modules.">
+              <div class="card-header-row">
+                <div class="card-title">🎓 Subject-wise GPA</div>
+                <a class="card-link" onclick="document.querySelector('#sidebar-student a[onclick*=\'marks\']').click()">View all →</a>
+              </div>
+              <div class="table-container">
+                <table>
+                  <tbody>
+                    <tr>
+                      <td><strong>DSA</strong></td>
+                      <td style="text-align:right;"><span class="gpa-badge gpa-green">GPA 10.0</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>dbms</strong></td>
+                      <td style="text-align:right;"><span class="gpa-badge gpa-red">GPA 0.0</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="dashboard-grid">
-          <div class="card demo-tour-item" data-tour-title="Recent Attendance list" data-tour-desc="Timeline showing date records and verified status of classes attended.">
-            <div class="card-header-row">
-              <div class="card-title">📅 Recent Attendance</div>
-              <a class="card-link">View all →</a>
-            </div>
+        <!-- SECTION: Attendance -->
+        <div id="student-sec-attendance" class="section-pane">
+          <div class="card demo-tour-item" data-tour-title="Student Attendance Grid" data-tour-desc="Lists all courses with precise present lecture hours, absent limits, and status signals.">
+            <div class="card-title">Class Attendance History</div>
             <div class="table-container">
               <table>
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Lectures Attended</th>
+                    <th>Attendance %</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
                 <tbody>
                   <tr>
-                    <td><strong>2026-04-22</strong><div style="font-size:0.75rem; color:var(--text-muted);">ML</div></td>
-                    <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                    <td><strong>Data Structures &amp; Algorithms (DSA)</strong></td>
+                    <td>14 / 14</td>
+                    <td>100%</td>
+                    <td><span class="badge badge-present">Excellent</span></td>
                   </tr>
                   <tr>
-                    <td><strong>2026-05-29</strong><div style="font-size:0.75rem; color:var(--text-muted);">DSA</div></td>
-                    <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                    <td><strong>Database Management Systems (DBMS)</strong></td>
+                    <td>9 / 9</td>
+                    <td>100%</td>
+                    <td><span class="badge badge-present">Excellent</span></td>
                   </tr>
                   <tr>
-                    <td><strong>2026-05-04</strong><div style="font-size:0.75rem; color:var(--text-muted);">DSA</div></td>
-                    <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>2026-04-04</strong><div style="font-size:0.75rem; color:var(--text-muted);">DSA</div></td>
-                    <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>2026-04-08</strong><div style="font-size:0.75rem; color:var(--text-muted);">C# > NET</div></td>
-                    <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                    <td><strong>Machine Learning (ML)</strong></td>
+                    <td>6 / 6</td>
+                    <td>100%</td>
+                    <td><span class="badge badge-present">Excellent</span></td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
+        </div>
 
-          <div class="card demo-tour-item" data-tour-title="Subject-wise GPA list" data-tour-desc="Details your grade records subject-wise. Shows GPA rankings for separate modules.">
-            <div class="card-header-row">
-              <div class="card-title">🎓 Subject-wise GPA</div>
-              <a class="card-link">View all →</a>
-            </div>
+        <!-- SECTION: Marks & GPA -->
+        <div id="student-sec-marks" class="section-pane">
+          <div class="card demo-tour-item" data-tour-title="Marks Transcript" data-tour-desc="View academic marks scored in internal quizzes, mid-term tests, and end-term exams.">
+            <div class="card-title">Subject Grades &amp; Exam Scores</div>
             <div class="table-container">
               <table>
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Midterm (50)</th>
+                    <th>Endterm (100)</th>
+                    <th>Quiz Avg</th>
+                    <th>Grade Points</th>
+                  </tr>
+                </thead>
                 <tbody>
                   <tr>
-                    <td><strong>DSA</strong></td>
-                    <td style="text-align:right;"><span class="gpa-badge gpa-green">GPA 10.0</span></td>
+                    <td>DSA</td>
+                    <td>48</td>
+                    <td>95</td>
+                    <td>9.8</td>
+                    <td><span class="gpa-badge gpa-green">A+ (10.0)</span></td>
                   </tr>
                   <tr>
-                    <td><strong>dbms</strong></td>
-                    <td style="text-align:right;"><span class="gpa-badge gpa-red">GPA 0.0</span></td>
+                    <td>DBMS</td>
+                    <td>42</td>
+                    <td>88</td>
+                    <td>8.5</td>
+                    <td><span class="gpa-badge gpa-green">A (9.0)</span></td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
+
+        <!-- SECTION: Assignments -->
+        <div id="student-sec-assignments" class="section-pane">
+          <div class="dashboard-grid">
+            <div class="card demo-tour-item" data-tour-title="Assigned Tasks Tracker" data-tour-desc="Index of assignments assigned by teachers. Click to select and upload your deliverables.">
+              <div class="card-title">Active Homework Assignments</div>
+              <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 1rem;">Choose a class homework assignment from the directory to launch the file upload tool.</p>
+              <div style="border: 1px solid var(--border); border-radius:10px; padding:12px; cursor:pointer;" onclick="alert('Demo: Assignment selected!')">
+                <h4 style="font-size:0.9rem;">Neural Networks Lab 3</h4>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Design a Multi-Layer Perceptron using Numpy library.</p>
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem; margin-top:8px; font-weight:700;">
+                  <span style="color:var(--danger);">⚠️ Due: tomorrow</span>
+                  <span style="color:var(--primary);">Max: 100 pts</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card demo-tour-item" data-tour-title="Homework Uploader Sandbox" data-tour-desc="Simulated drag-and-drop workspace. Drag mock assignments here to register submissions on the cloud.">
+              <div class="card-title">Upload Submission files</div>
+              <div class="file-drop-zone" onclick="alert('Demo: File selector opened! (Simulation)')">
+                <div style="font-size:1.8rem; margin-bottom:8px;">📁</div>
+                <div style="font-size:0.83rem; font-weight:700;">Drag &amp; Drop Assignment PDF/ZIP</div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Supported: PDF, ZIP (Max 25MB)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Engagement -->
+        <div id="student-sec-engagement" class="section-pane">
+          <div class="dashboard-grid">
+            <div class="card demo-tour-item" data-tour-title="AI face scanner tracker mockup" data-tour-desc="Launches live video stream overlay. Analyzes face coordinate values and records user check-in history.">
+              <div class="card-title">Face Verification Camera Overlay</div>
+              <div class="camera-box">
+                <div class="scanning-line"></div>
+                <div class="camera-overlay"></div>
+                <span style="color:#6c76a5; font-weight:600; font-size:0.85rem; z-index:10;">Tracking face coordinate points...</span>
+              </div>
+            </div>
+            
+            <div class="card demo-tour-item" data-tour-title="Gaze focus logs indicator" data-tour-desc="Displays real-time logs indicating focus metrics, gaze direction score charts, and screen distraction warnings.">
+              <div class="card-title">Engagement Statistics</div>
+              <div class="chart-bar-container">
+                <div class="chart-row">
+                  <div class="chart-label">Focus Gaze</div>
+                  <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 95%; background: var(--success);"></div></div>
+                  <div class="chart-label" style="text-align:right;">95%</div>
+                </div>
+                <div class="chart-row">
+                  <div class="chart-label">Participation</div>
+                  <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 80%; background: var(--primary);"></div></div>
+                  <div class="chart-label" style="text-align:right;">80%</div>
+                </div>
+                <div class="chart-row">
+                  <div class="chart-label">Interact Rate</div>
+                  <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 90%; background: var(--info);"></div></div>
+                  <div class="chart-label" style="text-align:right;">90%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Timetable -->
+        <div id="student-sec-timetable" class="section-pane">
+          <div class="card demo-tour-item" data-tour-title="Semester Calendar Timetable" data-tour-desc="Reviews active weekly lecture timetables configured for your batch.">
+            <div class="card-title">Weekly Lecture Timetable</div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Day</th>
+                    <th>10:00 AM - 11:30 AM</th>
+                    <th>11:30 AM - 01:00 PM</th>
+                    <th>02:00 PM - 03:30 PM</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Monday</strong></td>
+                    <td>DSA (L-101)</td>
+                    <td>DBMS (L-102)</td>
+                    <td>Library Session</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Tuesday</strong></td>
+                    <td>ML (L-201)</td>
+                    <td>DSA (Lab-3)</td>
+                    <td>C# Programming</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Wednesday</strong></td>
+                    <td>DBMS (Lab-1)</td>
+                    <td>ML (L-201)</td>
+                    <td>Theory of Computation</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Notifications -->
+        <div id="student-sec-notifications" class="section-pane">
+          <div class="card demo-tour-item" data-tour-title="Student inbox alerts" data-tour-desc="List centre of official alert messages from faculty members.">
+            <div class="card-title">System Messages &amp; Warnings Centre</div>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:1rem;">
+              <div style="background:#fff8eb; border:1px solid #ffe8cc; border-radius:10px; padding:12px;">
+                <strong style="color:#b27b00; font-size:0.88rem;">⚠️ Low Attendance Alert: Theory of Computation</strong>
+                <p style="font-size:0.78rem; color:var(--text-main); margin-top:2px;">Your attendance has dropped to 72% in this module. Maintain presence in upcoming lectures to avoid warnings.</p>
+              </div>
+              <div style="background:#e8faf5; border:1px solid #c3f3e6; border-radius:10px; padding:12px;">
+                <strong style="color:var(--success); font-size:0.88rem;">✅ Marks Graded: DSA Midterm</strong>
+                <p style="font-size:0.78rem; color:var(--text-main); margin-top:2px;">Your midterm marks have been graded. Result: 48/50. View Grade card for full details.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Profile -->
+        <div id="student-sec-profile" class="section-pane">
+          <div class="dashboard-grid">
+            <div class="card demo-tour-item" data-tour-title="Student Card Details" data-tour-desc="Shows your unique registration codes, active email addresses, batch name, and section code.">
+              <div class="card-title">My Registration details</div>
+              <div style="font-size:0.85rem; display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+                <div><strong>Full Name:</strong> Ankit Kumar Jha</div>
+                <div><strong>Roll Number:</strong> 11</div>
+                <div><strong>Section:</strong> O</div>
+                <div><strong>Email:</strong> ankit.jha_cs23@gla.ac.in</div>
+                <div><strong>Department:</strong> Computer Science Engineering</div>
+              </div>
+            </div>
+            
+            <div class="card demo-tour-item" data-tour-title="Student biometric photo face catalog" data-tour-desc="Upload a reference portrait image used by face scanner devices to identify you.">
+              <div class="card-title">Biometric Face Registry (Photo)</div>
+              <div style="border:1px solid var(--border); border-radius:12px; padding:1rem; text-align:center; background:#fafbfe;">
+                <div class="user-avatar" style="width:72px; height:72px; font-size:1.8rem; font-weight:800; margin:0 auto 12px; background:#5b37b7;">A</div>
+                <button style="padding:6px 12px; background:var(--primary); color:#fff; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer;" onclick="alert('Biometric photo successfully registered! (Simulation)')">Register Face Photo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Quiz -->
+        <div id="student-sec-quiz" class="section-pane">
+          <div class="card demo-tour-item" data-tour-title="Live Student Quiz card" data-tour-desc="Allows you to answer multiple choice questions scheduled by teachers during active sessions.">
+            <div class="card-title">Active Lecture Quiz</div>
+            <div style="border:1px solid var(--border); border-radius:12px; padding:1.25rem; background:#fafbfe; margin-top:1rem;">
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:12px;">
+                <span style="font-weight:700; font-size:0.8rem; color:var(--primary);">DSA REVISION QUIZ</span>
+                <span style="background:#ffeff0; color:var(--danger); font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:12px;">⏱️ 14s Left</span>
+              </div>
+              <h4 style="font-size:0.95rem; color:var(--text-main); font-weight:600; margin-bottom:12px;">Which of the following sorting algorithms is stable and has O(N log N) worst-case time complexity?</h4>
+              <div class="quiz-options">
+                <div class="quiz-option" onclick="alert('Option selected! Correct Answer.')">Merge Sort</div>
+                <div class="quiz-option" onclick="alert('Option selected! In-correct.')">Quick Sort</div>
+                <div class="quiz-option" onclick="alert('Option selected! In-correct.')">Heap Sort</div>
+                <div class="quiz-option" onclick="alert('Option selected! In-correct.')">Selection Sort</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
+
 
       <!-- ============ 2. TEACHER PORTAL DEMO ============ -->
       <div id="portal-teacher" class="portal-content">
         <div class="topbar">
           <div class="topbar-left">
-            <h4>Dashboard</h4>
+            <h4 id="teacher-page-title">Dashboard</h4>
             <p>Good day, Dr. Shreya Sharma 👋</p>
           </div>
           <div class="topbar-right">
-            <div class="bell-btn demo-tour-item" data-tour-title="Faculty Notifications" data-tour-desc="Notifications for submitted assignments, at-risk warnings, and quiz logs.">🔔</div>
+            <div class="bell-btn demo-tour-item" onclick="document.querySelector('#sidebar-teacher a[onclick*=\'risk\']').click()" data-tour-title="Faculty Notifications" data-tour-desc="Notifications for submitted assignments, at-risk warnings, and quiz logs.">🔔</div>
             <div class="user-chip demo-tour-item" data-tour-title="Teacher User Profile" data-tour-desc="Logged-in teacher profile, including name and subject profile links.">
               <div class="user-avatar" style="background: #4f46e5;">D</div>Dr. Shreya Sharma
             </div>
           </div>
         </div>
 
-        <div class="stat-grid">
-          <div class="stat-card demo-tour-item" data-tour-title="Enrolled Students Card" data-tour-desc="Total unique students registered across courses assigned to you.">
-            <div class="stat-icon pu">👥</div>
-            <div class="stat-details">
-              <h3>5</h3>
-              <p>Total Students</p>
+        <!-- SECTION: Dashboard -->
+        <div id="teacher-sec-dashboard" class="section-pane active">
+          <div class="stat-grid">
+            <div class="stat-card demo-tour-item" data-tour-title="Enrolled Students Card" data-tour-desc="Total unique students registered across courses assigned to you.">
+              <div class="stat-icon pu">👥</div>
+              <div class="stat-details">
+                <h3>5</h3>
+                <p>Total Students</p>
+              </div>
+            </div>
+            <div class="stat-card demo-tour-item" data-tour-title="Class Attendance Rate Card" data-tour-desc="Running average attendance percentage across all scheduled class sections.">
+              <div class="stat-icon bl">📊</div>
+              <div class="stat-details">
+                <h3>90%</h3>
+                <p>Avg Attendance</p>
+              </div>
+            </div>
+            <div class="stat-card demo-tour-item" data-tour-title="At-Risk Alerts Card" data-tour-desc="Students with critical metrics (attendance below 75% or low performance) needing follow-up.">
+              <div class="stat-icon pi">⚠️</div>
+              <div class="stat-details">
+                <h3>1</h3>
+                <p>At-Risk Students</p>
+              </div>
+            </div>
+            <div class="stat-card demo-tour-item" data-tour-title="Coursework Assignments Count" data-tour-desc="Total active homework tasks and quizzes running this semester.">
+              <div class="stat-icon or">📂</div>
+              <div class="stat-details">
+                <h3>7</h3>
+                <p>Assignments</p>
+              </div>
             </div>
           </div>
-          <div class="stat-card demo-tour-item" data-tour-title="Class Attendance Rate Card" data-tour-desc="Running average attendance percentage across all scheduled class sections.">
-            <div class="stat-icon bl">📊</div>
-            <div class="stat-details">
-              <h3>90%</h3>
-              <p>Avg Attendance</p>
+
+          <div class="dashboard-grid">
+            <div class="card demo-tour-item" data-tour-title="Recent Students Table" data-tour-desc="List of students registered in your class section. Displays roll numbers and division mappings.">
+              <div class="card-header-row">
+                <div class="card-title">👥 Recent Students</div>
+                <a class="card-link" onclick="document.querySelector('#sidebar-teacher a[onclick*=\'students\']').click()">View all →</a>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Roll No</th>
+                      <th>Section</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Ankit Kumar Jha</strong></td>
+                      <td>11</td>
+                      <td>O</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Ritik Raj Singh</strong></td>
+                      <td>55</td>
+                      <td>O</td>
+                    </tr>
+                    <tr>
+                      <td><strong>NAMAN yadav</strong></td>
+                      <td>41</td>
+                      <td>o</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Naman Yadav</strong></td>
+                      <td>41</td>
+                      <td>O</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Arihant Sharma</strong></td>
+                      <td>18</td>
+                      <td>O</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-          <div class="stat-card demo-tour-item" data-tour-title="At-Risk Alerts Card" data-tour-desc="Students with critical metrics (attendance below 75% or low performance) needing follow-up.">
-            <div class="stat-icon pi">⚠️</div>
-            <div class="stat-details">
-              <h3>1</h3>
-              <p>At-Risk Students</p>
-            </div>
-          </div>
-          <div class="stat-card demo-tour-item" data-tour-title="Coursework Assignments Count" data-tour-desc="Total active homework tasks and quizzes running this semester.">
-            <div class="stat-icon or">📂</div>
-            <div class="stat-details">
-              <h3>7</h3>
-              <p>Assignments</p>
+
+            <div class="card demo-tour-item" data-tour-title="Live Classroom Control Panel" data-tour-desc="Allows teachers to set subjects, session duration, and start a class. This instantly broadcasts a join card to students.">
+              <div class="card-title">📹 Live Class Control</div>
+              <div class="control-group">
+                <label class="control-label">Subject</label>
+                <input type="text" class="control-input" id="class-subject" value="DSA"/>
+                
+                <label class="control-label">Duration (Minutes)</label>
+                <input type="number" class="control-input" id="class-duration" value="60"/>
+                
+                <div class="btn-row">
+                  <button class="btn-action btn-start" onclick="toggleDemoClass(true)">▶ Start Class</button>
+                  <button class="btn-action btn-end" onclick="toggleDemoClass(false)">■ End Class</button>
+                </div>
+
+                <div class="status-indicator">
+                  <div class="status-dot" id="demo-class-dot"></div>
+                  <span id="demo-class-text">Not Live</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="dashboard-grid">
-          <div class="card demo-tour-item" data-tour-title="Recent Students Table" data-tour-desc="List of students registered in your class section. Displays roll numbers and division mappings.">
-            <div class="card-header-row">
-              <div class="card-title">👥 Recent Students</div>
-              <a class="card-link">View all →</a>
-            </div>
+        <!-- SECTION: All Students -->
+        <div id="teacher-sec-students" class="section-pane">
+          <div class="card demo-tour-item" data-tour-title="Students Directory Table" data-tour-desc="View student names, roll numbers, attendance rates, and final transcript stats.">
+            <div class="card-title">My Registered Class Roster</div>
             <div class="table-container">
               <table>
                 <thead>
                   <tr>
-                    <th>Name</th>
+                    <th>Student Name</th>
                     <th>Roll No</th>
                     <th>Section</th>
+                    <th>Att. Rate</th>
+                    <th>Academic Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1188,125 +1547,503 @@
                     <td><strong>Ankit Kumar Jha</strong></td>
                     <td>11</td>
                     <td>O</td>
+                    <td>100%</td>
+                    <td><span class="badge badge-present">Excellent</span></td>
                   </tr>
                   <tr>
                     <td><strong>Ritik Raj Singh</strong></td>
                     <td>55</td>
                     <td>O</td>
+                    <td>89%</td>
+                    <td><span class="badge badge-present">Good</span></td>
                   </tr>
                   <tr>
                     <td><strong>NAMAN yadav</strong></td>
                     <td>41</td>
                     <td>o</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Naman Yadav</strong></td>
-                    <td>41</td>
-                    <td>O</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Arihant Sharma</strong></td>
-                    <td>18</td>
-                    <td>O</td>
+                    <td>68%</td>
+                    <td><span class="badge badge-absent">At-Risk</span></td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
+        </div>
 
-          <div class="card demo-tour-item" data-tour-title="Live Classroom Control Panel" data-tour-desc="Allows teachers to set subjects, session duration, and start a class. This instantly broadcasts a join card to students.">
-            <div class="card-title">📹 Live Class Control</div>
-            <div class="control-group">
-              <label class="control-label">Subject</label>
-              <input type="text" class="control-input" id="class-subject" value="DSA"/>
-              
-              <label class="control-label">Duration (Minutes)</label>
-              <input type="number" class="control-input" id="class-duration" value="60"/>
-              
-              <div class="btn-row">
-                <button class="btn-action btn-start" onclick="toggleDemoClass(true)">▶ Start Class</button>
-                <button class="btn-action btn-end" onclick="toggleDemoClass(false)">■ End Class</button>
+        <!-- SECTION: Mark Attendance -->
+        <div id="teacher-sec-attendance" class="section-pane">
+          <div class="dashboard-grid">
+            <div class="card demo-tour-item" data-tour-title="Biometric Face Scanner Simulator" data-tour-desc="Simulates the live webcam class camera scanner feeds verifying check-in coordinate logs.">
+              <div class="card-title">AI Camera Scan Feeds (Active Tracker)</div>
+              <div class="camera-box">
+                <div class="scanning-line"></div>
+                <div class="camera-overlay"></div>
+                <span style="color:#6c76a5; font-weight:600; font-size:0.85rem; z-index:10;">Camera Scanner initialized...</span>
               </div>
-
-              <div class="status-indicator">
-                <div class="status-dot" id="demo-class-dot"></div>
-                <span id="demo-class-text">Not Live</span>
+            </div>
+            <div class="card demo-tour-item" data-tour-title="Scanned User logs" data-tour-desc="Displays audit history of checked-in student names verified by the AI face catalog scanner.">
+              <div class="card-title">Checked-in Attendee registry</div>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Registered Time</th>
+                      <th>AI confidence</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Ankit Kumar Jha</td>
+                      <td>10:05 AM</td>
+                      <td><span class="badge badge-present">98.5% Match</span></td>
+                    </tr>
+                    <tr>
+                      <td>Ritik Raj Singh</td>
+                      <td>10:07 AM</td>
+                      <td><span class="badge badge-present">96.2% Match</span></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- SECTION: Enter Marks -->
+        <div id="teacher-sec-marks" class="section-pane">
+          <div class="dashboard-grid">
+            <div class="card demo-tour-item" data-tour-title="Score Submitter form" data-tour-desc="Gradebook inputs to configure marks for midterm tests or assignments.">
+              <div class="card-title">Submit Grades &amp; Exam Marks</div>
+              <div class="control-group">
+                <label class="control-label">Subject Selection</label>
+                <select class="control-input" style="height:40px;">
+                  <option>DSA</option>
+                  <option>DBMS</option>
+                </select>
+                
+                <label class="control-label">Select Student</label>
+                <select class="control-input" style="height:40px;">
+                  <option>Ankit Kumar Jha (Roll: 11)</option>
+                  <option>Ritik Raj Singh (Roll: 55)</option>
+                  <option>NAMAN yadav (Roll: 41)</option>
+                </select>
+                
+                <label class="control-label">Marks Scored (Max 100)</label>
+                <input type="number" class="control-input" placeholder="Enter score" value="92"/>
+                
+                <button class="btn-action btn-start" style="width:100%; margin-top:8px;" onclick="alert('Grades successfully submitted to database! (Simulation)')">Save Grade</button>
+              </div>
+            </div>
+            <div class="card demo-tour-item" data-tour-title="Class performance statistics" data-tour-desc="Aggregates and calculates running mean grades and pass percentages for select modules.">
+              <div class="card-title">Class Performance Summary</div>
+              <div class="chart-bar-container">
+                <div class="chart-row">
+                  <div class="chart-label">DSA Avg</div>
+                  <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 82%; background: var(--primary);"></div></div>
+                  <div class="chart-label" style="text-align:right;">82%</div>
+                </div>
+                <div class="chart-row">
+                  <div class="chart-label">DBMS Avg</div>
+                  <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 71%; background: var(--accent);"></div></div>
+                  <div class="chart-label" style="text-align:right;">71%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Manage Timetables -->
+        <div id="teacher-sec-timetable" class="section-pane">
+          <div class="card demo-tour-item" data-tour-title="Faculty Scheduler timetables" data-tour-desc="Create new slots, reschedule lectures, or configure division timetables.">
+            <div class="card-title">Teaching Class Schedule Calendar</div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Timing Slot</th>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>10:00 AM - 11:30 AM</strong></td>
+                    <td>Section O (DSA)</td>
+                    <td>Section P (ML)</td>
+                    <td>Section O (DSA - Lab)</td>
+                  </tr>
+                  <tr>
+                    <td><strong>11:30 AM - 01:00 PM</strong></td>
+                    <td>Office Hours</td>
+                    <td>Section O (DBMS)</td>
+                    <td>Office Hours</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: At Risk Students -->
+        <div id="teacher-sec-risk" class="section-pane">
+          <div class="card demo-tour-item" data-tour-title="At-Risk Alerts dashboard" data-tour-desc="Flagging engine sorting students whose attendance rates or scores drop below university thresholds.">
+            <div class="card-title">Low Attendance &amp; GPA Warning Logs</div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student Name</th>
+                    <th>Roll No</th>
+                    <th>Attendance Rate</th>
+                    <th>Cumulative Score</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>NAMAN yadav</strong></td>
+                    <td>41</td>
+                    <td><span class="badge badge-absent">68%</span></td>
+                    <td>42%</td>
+                    <td><button style="padding:4px 8px; background:var(--danger); color:#fff; border:none; border-radius:6px; cursor:pointer;" onclick="alert('Warning notification dispatched to student! (Simulation)')">Send Warning</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Assignments -->
+        <div id="teacher-sec-assignments" class="section-pane">
+          <div class="dashboard-grid">
+            <div class="card demo-tour-item" data-tour-title="Assignment Creator console" data-tour-desc="Add coursework descriptions, points limits, and deadlines for students.">
+              <div class="card-title">Assign Coursework (Homework Creator)</div>
+              <div class="control-group">
+                <label class="control-label">Assignment Title</label>
+                <input type="text" class="control-input" value="Neural Networks Lab 3"/>
+                
+                <label class="control-label">Maximum Points</label>
+                <input type="number" class="control-input" value="100"/>
+                
+                <label class="control-label">Due Date</label>
+                <input type="date" class="control-input"/>
+                
+                <button class="btn-action btn-start" style="width:100%; margin-top:8px;" onclick="alert('Coursework assignment created and notified! (Simulation)')">Create Assignment</button>
+              </div>
+            </div>
+            <div class="card demo-tour-item" data-tour-title="Active assignment submissions list" data-tour-desc="Index of assignments running this semester showing submit rates.">
+              <div class="card-title">Homework Submissions Summary</div>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Homework</th>
+                      <th>Submissions</th>
+                      <th>Graded</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>DSA Assignment 1</td>
+                      <td>5 / 5</td>
+                      <td><span class="badge badge-present">All Graded</span></td>
+                    </tr>
+                    <tr>
+                      <td>DBMS Assignment 2</td>
+                      <td>4 / 5</td>
+                      <td><span class="badge badge-present">3 Graded</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Engagement -->
+        <div id="teacher-sec-engagement" class="section-pane">
+          <div class="card demo-tour-item" data-tour-title="Engagement Gaze Metrics" data-tour-desc="Displays real-time gaze attention percentages and screen focus statistics.">
+            <div class="card-title">Real-Time Class Engagement Analysis</div>
+            <div class="chart-bar-container" style="margin-top:1rem;">
+              <div class="chart-row">
+                <div class="chart-label">Ankit Kumar Jha</div>
+                <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 98%; background: var(--success);"></div></div>
+                <div class="chart-label" style="text-align:right;">98%</div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Ritik Raj Singh</div>
+                <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 82%; background: var(--primary);"></div></div>
+                <div class="chart-label" style="text-align:right;">82%</div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">NAMAN yadav</div>
+                <div class="chart-bar-bg"><div class="chart-bar-fill" style="width: 44%; background: var(--danger);"></div></div>
+                <div class="chart-label" style="text-align:right;">44%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Quiz -->
+        <div id="teacher-sec-quiz" class="section-pane">
+          <div class="card demo-tour-item" data-tour-title="Quiz host dashboard" data-tour-desc="Allows teachers to create live multiple-choice class quizzes.">
+            <div class="card-title">Live Classroom Quiz Manager</div>
+            <div class="control-group">
+              <label class="control-label">Quiz Title</label>
+              <input type="text" class="control-input" value="DSA Revision Quiz"/>
+              
+              <label class="control-label">Question Text</label>
+              <input type="text" class="control-input" value="Which of the following sorting algorithms is stable and has O(N log N) worst-case time complexity?"/>
+              
+              <button class="btn-action btn-start" style="width:100%; margin-top:8px;" onclick="alert('Quiz successfully broadcasted to student portal! (Simulation)')">🚀 Start Quiz</button>
+            </div>
+          </div>
+        </div>
+
       </div>
+
 
       <!-- ============ 3. ADMIN PORTAL DEMO ============ -->
       <div id="portal-admin" class="portal-content">
         <div class="topbar">
           <div class="topbar-left">
-            <h4 style="color: #fff;">Dashboard Overview</h4>
+            <h4 id="admin-page-title">Dashboard Overview</h4>
             <p>Platform-wide statistics and management.</p>
           </div>
           <div class="topbar-right">
-            <div class="bell-btn demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05); color:#fff;" data-tour-title="System Logs Alert" data-tour-desc="Reviews global log database activity alerts.">🔔</div>
+            <div class="bell-btn demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05); color:#fff;" onclick="alert('Admin Notifications Log: Clean.')" data-tour-title="System Logs Alert" data-tour-desc="Reviews global log database activity alerts.">🔔</div>
             <div class="user-chip demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05); color:#fff;">
               <div class="user-avatar" style="background: #4f46e5;">SA</div>Super Admin
             </div>
           </div>
         </div>
 
-        <div class="stat-grid">
-          <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global Students Tally" data-tour-desc="Sum total of all student accounts registered across the database.">
-            <div class="stat-icon pu" style="background: rgba(79, 70, 229, 0.15); color: #7b59d9;">👥</div>
-            <div class="stat-details">
-              <h3 style="color:#fff;">5</h3>
-              <p>TOTAL STUDENTS</p>
+        <!-- SECTION: Overview -->
+        <div id="admin-sec-overview" class="section-pane active">
+          <div class="stat-grid">
+            <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global Students Tally" data-tour-desc="Sum total of all student accounts registered across the database.">
+              <div class="stat-icon pu" style="background: rgba(79, 70, 229, 0.15); color: #7b59d9;">👥</div>
+              <div class="stat-details">
+                <h3 style="color:#fff;">5</h3>
+                <p>TOTAL STUDENTS</p>
+              </div>
+            </div>
+            <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global Faculty Tally" data-tour-desc="Count of registered teacher and staff accounts on the tracker platform.">
+              <div class="stat-icon pu" style="background: rgba(79, 70, 229, 0.15); color: #7b59d9;">💼</div>
+              <div class="stat-details">
+                <h3 style="color:#fff;">1</h3>
+                <p>TOTAL FACULTY</p>
+              </div>
+            </div>
+            <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Scheduled Classes" data-tour-desc="Number of currently active or scheduled class schedules config.">
+              <div class="stat-icon pi" style="background: rgba(238, 93, 80, 0.15); color: #ee5d50;">🗓️</div>
+              <div class="stat-details">
+                <h3 style="color:#fff;">4</h3>
+                <p>SCHEDULED CLASSES</p>
+              </div>
+            </div>
+            <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Attendance Logs Auditor" data-tour-desc="Total check-in presence records logged by students via scanners or manuals.">
+              <div class="stat-icon gr" style="background: rgba(5, 205, 153, 0.15); color: #05cd99;">✅</div>
+              <div class="stat-details">
+                <h3 style="color:#fff;">21</h3>
+                <p>ATTENDANCE LOGS</p>
+              </div>
             </div>
           </div>
-          <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global Faculty Tally" data-tour-desc="Count of registered teacher and staff accounts on the tracker platform.">
-            <div class="stat-icon pu" style="background: rgba(79, 70, 229, 0.15); color: #7b59d9;">💼</div>
-            <div class="stat-details">
-              <h3 style="color:#fff;">1</h3>
-              <p>TOTAL FACULTY</p>
-            </div>
-          </div>
-          <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Scheduled Classes" data-tour-desc="Number of currently active or scheduled class schedules config.">
-            <div class="stat-icon pi" style="background: rgba(238, 93, 80, 0.15); color: #ee5d50;">🗓️</div>
-            <div class="stat-details">
-              <h3 style="color:#fff;">4</h3>
-              <p>SCHEDULED CLASSES</p>
-            </div>
-          </div>
-          <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Attendance Logs Auditor" data-tour-desc="Total check-in presence records logged by students via scanners or manuals.">
-            <div class="stat-icon gr" style="background: rgba(5, 205, 153, 0.15); color: #05cd99;">✅</div>
-            <div class="stat-details">
-              <h3 style="color:#fff;">21</h3>
-              <p>ATTENDANCE LOGS</p>
+
+          <div class="card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Admin Hub quick info card" data-tour-desc="Provides platform guidelines to help global administrators configure records.">
+            <div class="admin-info-box">
+              <div class="admin-info-header">
+                <span>ℹ️</span> Admin Quick Information
+              </div>
+              <div class="admin-info-desc">
+                Welcome to the central Admin Hub. You can use the sidebar to navigate through global platform data.
+              </div>
+              <div class="admin-info-list">
+                <div class="admin-info-item">
+                  <span>📁</span> <div><strong>Directory:</strong> Monitor and remove users securely.</div>
+                </div>
+                <div class="admin-info-item">
+                  <span>🗓️</span> <div><strong>Timetables:</strong> View every active class schedule across all sections.</div>
+                </div>
+                <div class="admin-info-item">
+                  <span>📊</span> <div><strong>Global Attendance:</strong> Access a raw, unfiltered view of every attendance mark submitted by teachers.</div>
+                </div>
+                <div class="admin-info-item">
+                  <span>⭐</span> <div><strong>Student Records:</strong> Review marks and quiz scores across all subjects and campuses.</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Admin Hub quick info card" data-tour-desc="Provides platform guidelines to help global administrators configure records.">
-          <div class="admin-info-box">
-            <div class="admin-info-header">
-              <span>ℹ️</span> Admin Quick Information
-            </div>
-            <div class="admin-info-desc">
-              Welcome to the central Admin Hub. You can use the sidebar to navigate through global platform data.
-            </div>
-            <div class="admin-info-list">
-              <div class="admin-info-item">
-                <span>📁</span> <div><strong>Directory:</strong> Monitor and remove users securely.</div>
-              </div>
-              <div class="admin-info-item">
-                <span>🗓️</span> <div><strong>Timetables:</strong> View every active class schedule across all sections.</div>
-              </div>
-              <div class="admin-info-item">
-                <span>📊</span> <div><strong>Global Attendance:</strong> Access a raw, unfiltered view of every attendance mark submitted by teachers.</div>
-              </div>
-              <div class="admin-info-item">
-                <span>⭐</span> <div><strong>Student Records:</strong> Review marks and quiz scores across all subjects and campuses.</div>
-              </div>
+        <!-- SECTION: Students Directory -->
+        <div id="admin-sec-students" class="section-pane">
+          <div class="card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global Students Index" data-tour-desc="Reviews and manages student login credentials. Allows removing registrations from database.">
+            <div class="card-title" style="color:#fff;">Global Students Registry</div>
+            <div class="table-container" style="margin-top:1rem;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student Name</th>
+                    <th>Email</th>
+                    <th>Section</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Ankit Kumar Jha</td>
+                    <td>ankit.jha_cs23@gla.ac.in</td>
+                    <td>O</td>
+                    <td><button style="padding:4px 8px; background:var(--danger); color:#fff; border:none; border-radius:6px; cursor:pointer;" onclick="alert('Demo: Student registration removed!')">Delete</button></td>
+                  </tr>
+                  <tr>
+                    <td>Ritik Raj Singh</td>
+                    <td>ritik.singh_cs23@gla.ac.in</td>
+                    <td>O</td>
+                    <td><button style="padding:4px 8px; background:var(--danger); color:#fff; border:none; border-radius:6px; cursor:pointer;" onclick="alert('Demo: Student registration removed!')">Delete</button></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
+
+        <!-- SECTION: Teachers Directory -->
+        <div id="admin-sec-teachers" class="section-pane">
+          <div class="card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global Faculty Index" data-tour-desc="Directory of faculty registrations. Assign classes or register new academic profiles.">
+            <div class="card-title" style="color:#fff;">Global Faculty Registry</div>
+            <div class="table-container" style="margin-top:1rem;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Teacher</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Dr. Shreya Sharma</td>
+                    <td>shreya.sharma@gla.ac.in</td>
+                    <td>Computer Science</td>
+                    <td><button style="padding:4px 8px; background:var(--danger); color:#fff; border:none; border-radius:6px; cursor:pointer;" onclick="alert('Demo: Faculty registration removed!')">Delete</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Master Timetables -->
+        <div id="admin-sec-timetables" class="section-pane">
+          <div class="card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global Timetable Configurations" data-tour-desc="Audit dashboard to monitor schedule times configured across all departments.">
+            <div class="card-title" style="color:#fff;">Master Lecture Timetables config</div>
+            <div class="table-container" style="margin-top:1rem;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Batch</th>
+                    <th>Subject</th>
+                    <th>Lecture Timing</th>
+                    <th>Teacher Assigned</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>CSE - Sec O</td>
+                    <td>DSA</td>
+                    <td>Mon (10:00 AM)</td>
+                    <td>Dr. Shreya Sharma</td>
+                  </tr>
+                  <tr>
+                    <td>CSE - Sec P</td>
+                    <td>ML</td>
+                    <td>Tue (10:00 AM)</td>
+                    <td>Dr. R.K. Varma</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Global Attendance Logs -->
+        <div id="admin-sec-attendance" class="section-pane">
+          <div class="card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global Attendance Auditor" data-tour-desc="Audit logs records registered system-wide via face coordinate scans.">
+            <div class="card-title" style="color:#fff;">System-wide Attendance logs Database</div>
+            <div class="table-container" style="margin-top:1rem;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Course</th>
+                    <th>Verification Timestamp</th>
+                    <th>Marker</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Ankit Kumar Jha</td>
+                    <td>DSA</td>
+                    <td>13-July-2026 10:05 AM</td>
+                    <td><span class="badge badge-present">AI Facial scanner</span></td>
+                  </tr>
+                  <tr>
+                    <td>Ritik Raj Singh</td>
+                    <td>DSA</td>
+                    <td>13-July-2026 10:07 AM</td>
+                    <td><span class="badge badge-present">AI Facial scanner</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: Student Records -->
+        <div id="admin-sec-records" class="section-pane">
+          <div class="card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global academic rankings overview" data-tour-desc="Verify grades transcripts and cumulative GPA calculations recorded for each student.">
+            <div class="card-title" style="color:#fff;">Platform Grade Transcripts &amp; GPAs</div>
+            <div class="table-container" style="margin-top:1rem;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student Name</th>
+                    <th>Roll No</th>
+                    <th>Attendance %</th>
+                    <th>Cumulative GPA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Ankit Kumar Jha</td>
+                    <td>11</td>
+                    <td>100%</td>
+                    <td><span class="gpa-badge gpa-green">5.0 (Perfect)</span></td>
+                  </tr>
+                  <tr>
+                    <td>Ritik Raj Singh</td>
+                    <td>55</td>
+                    <td>89%</td>
+                    <td><span class="gpa-badge gpa-green">4.2 (Good)</span></td>
+                  </tr>
+                  <tr>
+                    <td>NAMAN yadav</td>
+                    <td>41</td>
+                    <td>68%</td>
+                    <td><span class="gpa-badge gpa-red">1.8 (Probation)</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -1333,12 +2070,10 @@
   <script>
     // Toggle role dashboard
     function switchRole(role) {
-      // Toggle button states
       document.querySelectorAll('.role-switcher .role-btn').forEach(btn => btn.classList.remove('active'));
       
       const buttons = document.querySelectorAll('.role-switcher .role-btn');
       
-      // Hide all sidebars and portal contents
       document.getElementById('sidebar-student').style.display = 'none';
       document.getElementById('sidebar-teacher').style.display = 'none';
       document.getElementById('sidebar-admin').style.display = 'none';
@@ -1347,24 +2082,54 @@
       document.getElementById('portal-teacher').classList.remove('active');
       document.getElementById('portal-admin').classList.remove('active');
       
-      // Remove body dark mode if active
       document.body.classList.remove('dark-mode');
 
-      // Switch
       if (role === 'student') {
         buttons[0].classList.add('active');
         document.getElementById('sidebar-student').style.display = 'flex';
         document.getElementById('portal-student').classList.add('active');
+        // Reset sub tab to dashboard
+        document.querySelector('#sidebar-student a[onclick*=\'dashboard\']').click();
       } else if (role === 'teacher') {
         buttons[1].classList.add('active');
         document.getElementById('sidebar-teacher').style.display = 'flex';
         document.getElementById('portal-teacher').classList.add('active');
+        // Reset sub tab to dashboard
+        document.querySelector('#sidebar-teacher a[onclick*=\'dashboard\']').click();
       } else if (role === 'admin') {
         buttons[2].classList.add('active');
         document.getElementById('sidebar-admin').style.display = 'flex';
         document.getElementById('portal-admin').classList.add('active');
-        // Enable dark mode for Admin view
         document.body.classList.add('dark-mode');
+        // Reset sub tab to overview
+        document.querySelector('#sidebar-admin a[onclick*=\'overview\']').click();
+      }
+    }
+
+    // Dynamic sidebar sub tab toggler
+    function switchTab(portalPrefix, sectionId, element) {
+      // Un-activate all links in the current sidebar
+      const navContainer = element.closest('.nav');
+      navContainer.querySelectorAll('a').forEach(link => link.classList.remove('active'));
+      
+      // Activate clicked link
+      element.classList.add('active');
+
+      // Hide all section panes under the current active portal content wrapper
+      const portalWrapper = document.getElementById(`portal-${portalPrefix}`);
+      portalWrapper.querySelectorAll('.section-pane').forEach(pane => pane.classList.remove('active'));
+
+      // Show selected pane
+      const targetPane = document.getElementById(`${portalPrefix}-sec-${sectionId}`);
+      if (targetPane) {
+        targetPane.classList.add('active');
+      }
+
+      // Dynamic title updater
+      const headerTitle = document.getElementById(`${portalPrefix}-page-title`);
+      if (headerTitle) {
+        // Human readable capital text
+        headerTitle.textContent = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
       }
     }
 
@@ -1412,7 +2177,6 @@
         tooltip.textContent = title;
         const rect = target.getBoundingClientRect();
         
-        // Horizontal center alignment
         tooltip.style.left = (rect.left + window.scrollX + rect.width / 2) + 'px';
         tooltip.style.top = (rect.top + window.scrollY - 6) + 'px';
         tooltip.classList.add('visible');
