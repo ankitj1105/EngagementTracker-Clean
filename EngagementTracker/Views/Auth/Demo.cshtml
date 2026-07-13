@@ -8,33 +8,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Application Demo &amp; Guided Tour — EngageTracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #f4f7fe;
-      font-family: 'Outfit', sans-serif;
-      color: #2b3674;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
     
-    /* Variables */
     :root {
-      --primary: #4318ff;
-      --primary-rgb: 67, 24, 255;
-      --secondary: #7b59d9;
+      /* Shared color tokens */
+      --primary: #5b37b7;
+      --primary-hover: #4e2ea3;
+      --accent: #7b59d9;
       --success: #05cd99;
       --danger: #ee5d50;
       --warning: #ffce20;
       --info: #39b8ff;
-      --sidebar-bg: #5b37b7;
-      --sidebar-text: #d4c6f5;
-      --sidebar-active: #7b59d9;
       --text-main: #2b3674;
       --text-muted: #a3aed1;
-      --border: #e2e8f0;
-      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+      --border: #f1f3f9;
+      --card-shadow: 0 10px 30px rgba(112, 144, 176, 0.08);
+      
+      /* Light theme page background */
+      --page-bg: #f4f7fe;
+      --card-bg: #ffffff;
+      
+      /* Dark theme mappings for Admin Hub */
+      --admin-bg: #0b0e19;
+      --admin-card-bg: #151a30;
+      --admin-text-main: #ffffff;
+      --admin-text-muted: #8d9bb0;
+      --admin-border: rgba(255, 255, 255, 0.05);
+    }
+
+    body {
+      background: var(--page-bg);
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+    
+    /* Dark mode toggle helper class */
+    body.dark-mode {
+      background: var(--admin-bg);
+      color: var(--admin-text-main);
     }
 
     /* Top Control Bar */
@@ -57,7 +72,7 @@
     .demo-logo {
       color: #fff;
       font-weight: 800;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -85,10 +100,10 @@
       color: rgba(255, 255, 255, 0.7);
       font-family: 'Outfit', sans-serif;
       font-weight: 600;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       cursor: pointer;
       border-radius: 20px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s;
     }
     .role-btn:hover {
       color: #fff;
@@ -125,151 +140,371 @@
 
     /* Sidebar styles */
     .sidebar {
-      width: 260px;
-      background: var(--sidebar-bg);
+      width: 250px;
+      background: var(--primary);
       display: flex;
       flex-direction: column;
-      border-top-right-radius: 20px;
-      border-bottom-right-radius: 20px;
-      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.03);
       position: fixed;
       left: 0;
       top: 65px;
       bottom: 0;
       z-index: 100;
-      transition: all 0.3s;
+      transition: background 0.3s;
     }
-    .sidebar-brand {
+    
+    body.dark-mode .sidebar {
+      background: #11162d;
+      border-right: 1px solid var(--admin-border);
+    }
+
+    .brand {
       padding: 24px;
-      color: #fff;
-      font-size: 1.1rem;
-      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .sidebar-brand span {
-      display: block;
-      font-size: 0.72rem;
-      color: rgba(255, 255, 255, 0.5);
-      font-weight: 500;
+    
+    body.dark-mode .brand {
+      border-bottom: 1px solid var(--admin-border);
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: #fff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    body.dark-mode .brand-icon {
+      background: #4f46e5;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    .brand-name {
+      font-weight: 800;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .brand-sub {
+      font-size: 0.7rem;
+      color: var(--sidebar-text);
       margin-top: 2px;
     }
-    .sidebar-menu {
+
+    .nav {
       padding: 16px 0;
       flex: 1;
       overflow-y: auto;
     }
-    .sidebar-section {
+    .nav-section {
       font-size: 0.65rem;
       font-weight: 700;
       color: rgba(255, 255, 255, 0.4);
-      letter-spacing: 0.1em;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      padding: 12px 24px 6px;
+      padding: 14px 24px 6px;
     }
-    .menu-item {
+    .nav a {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 12px 24px;
-      color: var(--sidebar-text);
+      color: rgba(255, 255, 255, 0.7);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 500;
-      cursor: pointer;
-      border-left: 4px solid transparent;
       transition: all 0.2s;
+      border-left: 4px solid transparent;
+      cursor: pointer;
     }
-    .menu-item:hover {
+    .nav a:hover {
       color: #fff;
       background: rgba(255, 255, 255, 0.04);
     }
-    .menu-item.active {
+    .nav a.active {
       color: #fff;
-      background: var(--sidebar-active);
+      background: rgba(255, 255, 255, 0.08);
+      font-weight: 600;
       border-left-color: #fff;
-      border-radius: 0 10px 10px 0;
-      margin-right: 16px;
+    }
+    
+    body.dark-mode .nav a.active {
+      background: rgba(79, 70, 229, 0.15);
+      border-left-color: #4f46e5;
+      color: #7b59d9;
+    }
+
+    .nav-icon {
+      font-size: 1.1rem;
+      width: 20px;
+      text-align: center;
+    }
+    
+    .nav-badge {
+      margin-left: auto;
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 12px;
+    }
+
+    .sidebar-bottom {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    body.dark-mode .sidebar-bottom {
+      border-top: 1px solid var(--admin-border);
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 550;
+    }
+    .logout-btn:hover {
+      color: #fff;
     }
 
     /* Main Area */
     .main-content {
       flex: 1;
-      margin-left: 260px;
+      margin-left: 250px;
       padding: 2rem;
-      overflow-y: auto;
+      min-height: calc(100vh - 65px);
+    }
+
+    /* Topbar */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .topbar-left h4 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+    body.dark-mode .topbar-left h4 {
+      color: var(--admin-text-main);
+    }
+    .topbar-left p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 4px;
+    }
+    body.dark-mode .topbar-left p {
+      color: var(--admin-text-muted);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .bell-btn {
+      width: 40px;
+      height: 40px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border);
+    }
+    body.dark-mode .bell-btn {
+      background: var(--admin-card-bg);
+      border-color: var(--admin-border);
+      color: #fff;
+    }
+
+    .user-chip {
+      background: #fff;
+      padding: 6px 14px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border);
+    }
+    body.dark-mode .user-chip {
+      background: var(--admin-card-bg);
+      border-color: var(--admin-border);
+      color: var(--admin-text-main);
+    }
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #4f46e5;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.82rem;
     }
 
     /* Stats Grid */
     .stat-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
+    @@media (max-width: 1024px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @@media (max-width: 576px) {
+      .stat-grid { grid-template-columns: 1fr; }
+    }
+
     .stat-card {
-      background: #fff;
-      border-radius: 15px;
-      padding: 1.25rem;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 1.5rem;
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.25rem;
       box-shadow: var(--card-shadow);
       border: 1px solid var(--border);
+      transition: background 0.3s, border-color 0.3s;
     }
+    
+    body.dark-mode .stat-card {
+      background: var(--admin-card-bg);
+      border-color: var(--admin-border);
+    }
+
     .stat-icon {
       width: 48px;
       height: 48px;
-      border-radius: 12px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.3rem;
     }
-    .stat-icon.pu { background: rgba(67, 24, 255, 0.08); color: var(--primary); }
-    .stat-icon.gr { background: rgba(5, 205, 153, 0.08); color: var(--success); }
-    .stat-icon.pi { background: rgba(238, 93, 80, 0.08); color: var(--danger); }
-    .stat-icon.bl { background: rgba(57, 184, 255, 0.08); color: var(--info); }
+    .stat-icon.pu { background: #f4efff; color: #7b59d9; }
+    .stat-icon.bl { background: #eef7ff; color: #39b8ff; }
+    .stat-icon.gr { background: #e8faf5; color: #05cd99; }
+    .stat-icon.or { background: #fff8eb; color: #ffbe39; }
+    .stat-icon.pi { background: #ffeff0; color: #ee5d50; }
+
     .stat-details h3 {
-      font-size: 1.4rem;
-      font-weight: 700;
+      font-size: 1.5rem;
+      font-weight: 800;
       color: var(--text-main);
+      line-height: 1.2;
+    }
+    body.dark-mode .stat-details h3 {
+      color: var(--admin-text-main);
     }
     .stat-details p {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
-      font-weight: 500;
-      margin-top: 2px;
+      font-weight: 600;
+    }
+    body.dark-mode .stat-details p {
+      color: var(--admin-text-muted);
+    }
+    .stat-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      margin-top: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .stat-progress-bar {
+      height: 4px;
+      background: #eef2f6;
+      border-radius: 4px;
+      margin-top: 6px;
+      width: 70px;
+      overflow: hidden;
+    }
+    .stat-progress-fill {
+      height: 100%;
+      border-radius: 4px;
     }
 
-    /* Dashboard Layout Grid */
+    /* Grid Layouts */
     .dashboard-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1.2fr 1fr;
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
     @@media (max-width: 992px) {
       .dashboard-grid { grid-template-columns: 1fr; }
     }
+
     .card {
-      background: #fff;
-      border-radius: 15px;
+      background: var(--card-bg);
+      border-radius: 20px;
       border: 1px solid var(--border);
       box-shadow: var(--card-shadow);
       padding: 1.5rem;
-      position: relative;
+      transition: background 0.3s, border-color 0.3s;
     }
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 1.2rem;
+    body.dark-mode .card {
+      background: var(--admin-card-bg);
+      border-color: var(--admin-border);
+    }
+
+    .card-header-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    body.dark-mode .card-title {
+      color: var(--admin-text-main);
+    }
+    .card-link {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .card-link:hover {
+      text-decoration: underline;
     }
 
-    /* Table styles */
+    /* Table formatting */
     .table-container {
       width: 100%;
       overflow-x: auto;
@@ -278,59 +513,252 @@
       width: 100%;
       border-collapse: collapse;
       text-align: left;
-      font-size: 0.88rem;
     }
     th {
+      font-size: 0.72rem;
+      font-weight: 700;
       color: var(--text-muted);
-      font-weight: 600;
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.78rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    body.dark-mode th {
+      border-bottom: 1px solid var(--admin-border);
+      color: var(--admin-text-muted);
     }
     td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 600;
       color: var(--text-main);
-      font-weight: 500;
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    body.dark-mode td {
+      border-bottom: 1px solid var(--admin-border);
+      color: var(--admin-text-main);
     }
     tr:last-child td {
       border-bottom: none;
     }
-    .user-profile {
+
+    .student-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #fafafa;
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Badges */
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .badge-present { background: rgba(5, 205, 153, 0.1); color: var(--success); }
+    .badge-absent { background: rgba(238, 93, 80, 0.1); color: var(--danger); }
+    
+    .gpa-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .gpa-green { background: #e8faf5; color: var(--success); }
+    .gpa-red { background: #ffeff0; color: var(--danger); }
+
+    /* Teacher live class controls styling */
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .control-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .control-input {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      color: var(--text-main);
+      outline: none;
+    }
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .btn-action {
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-start {
+      background: var(--success);
+      color: #fff;
+    }
+    .btn-start:hover {
+      background: #04b889;
+    }
+    .btn-end {
+      background: #fff5f5;
+      border: 1px solid #ffd0d0;
+      color: var(--danger);
+    }
+    .btn-end:hover {
+      background: #ffe3e3;
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-top: 12px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+    .status-dot.active {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    /* Live class alert for student */
+    .live-alert-card {
+      background: linear-gradient(135deg, #7b59d9, #4318ff);
+      color: #fff;
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 25px rgba(67, 24, 255, 0.15);
+      animation: alertPulse 2s infinite alternate;
+    }
+    @@keyframes alertPulse {
+      0% { box-shadow: 0 10px 25px rgba(67, 24, 255, 0.15); }
+      100% { box-shadow: 0 10px 30px rgba(123, 89, 217, 0.3); }
+    }
+    .live-alert-text h3 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .user-avatar {
-      width: 32px;
-      height: 32px;
+    .live-alert-dot {
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      background: #7c3aed;
-      color: #fff;
+      background: #fff;
+      animation: flash 1s infinite alternate;
+    }
+    @@keyframes flash {
+      0% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+    .live-alert-text p {
+      font-size: 0.83rem;
+      opacity: 0.85;
+    }
+    .live-alert-btn {
+      background: #fff;
+      color: var(--primary);
+      border: none;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: all 0.2s;
+    }
+    .live-alert-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    /* Admin Quick Info */
+    .admin-info-box {
+      border: 1px solid var(--admin-border);
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+    .admin-info-header {
+      font-size: 1rem;
+      font-weight: 800;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-weight: 700;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    .admin-info-desc {
       font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--admin-text-muted);
+      margin-bottom: 1.25rem;
     }
-    .badge {
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      font-weight: 700;
+    .admin-info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .badge-success { background: rgba(5, 205, 153, 0.1); color: var(--success); }
-    .badge-danger { background: rgba(238, 93, 80, 0.1); color: var(--danger); }
-    .badge-warning { background: rgba(255, 206, 32, 0.15); color: #d4a000; }
+    .admin-info-item {
+      font-size: 0.83rem;
+      color: var(--admin-text-muted);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .admin-info-item strong {
+      color: #fff;
+    }
 
     /* Floating Guide Helper Panel */
     .guide-panel {
       position: fixed;
       bottom: 25px;
       right: 25px;
-      width: 360px;
+      width: 350px;
       background: rgba(14, 14, 26, 0.95);
       border: 1px solid rgba(124, 58, 237, 0.5);
       box-shadow: 0 10px 40px rgba(124, 58, 237, 0.25);
@@ -339,7 +767,7 @@
       z-index: 2000;
       color: #fff;
       backdrop-filter: blur(8px);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s;
     }
     .guide-title {
       font-weight: 800;
@@ -357,59 +785,21 @@
     }
     .guide-footer {
       margin-top: 10px;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: #8b5cf6;
       font-weight: 600;
       letter-spacing: 0.02em;
     }
 
-    /* Live class card styling */
-    .live-join-card {
-      background: linear-gradient(135deg, #7c3aed, #4318ff);
-      color: #fff;
-      border-radius: 15px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 10px 25px rgba(67, 24, 255, 0.2);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .live-text h3 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .live-text p {
-      font-size: 0.85rem;
-      opacity: 0.85;
-    }
-    .live-btn {
-      background: #fff;
-      color: var(--primary);
-      border: none;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
-      transition: all 0.2s;
-    }
-    .live-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(255, 255, 255, 0.3);
-    }
-
     /* Interactive highlights */
     .demo-tour-item {
       cursor: help;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
       position: relative;
     }
     .demo-tour-item:hover {
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.6) !important;
-      transform: scale(1.01);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.5) !important;
+      transform: scale(1.005);
     }
 
     /* Tooltip Bubble */
@@ -445,85 +835,11 @@
     }
 
     /* Section content toggler */
-    .demo-view-section {
+    .portal-content {
       display: none;
     }
-    .demo-view-section.active {
+    .portal-content.active {
       display: block;
-      animation: fadeIn 0.4s ease-out;
-    }
-    @@keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* AI Attendance camera mock styling */
-    .camera-box {
-      width: 100%;
-      height: 250px;
-      background: #0f0f1b;
-      border-radius: 12px;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid rgba(124, 58, 237, 0.4);
-    }
-    .camera-overlay {
-      position: absolute;
-      inset: 0;
-      border: 2px dashed rgba(5, 205, 153, 0.6);
-      margin: 20px;
-      border-radius: 8px;
-      animation: pulseBorder 2s infinite alternate;
-    }
-    @@keyframes pulseBorder {
-      0% { opacity: 0.3; }
-      100% { opacity: 0.8; }
-    }
-    .scanning-line {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: var(--success);
-      box-shadow: 0 0 10px var(--success);
-      animation: scan 3s infinite linear;
-    }
-    @@keyframes scan {
-      0% { top: 0; }
-      100% { top: 100%; }
-    }
-
-    /* Real-time quiz mock */
-    .quiz-card {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      background: #fafbfe;
-      margin-top: 1rem;
-    }
-    .quiz-options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 1rem;
-    }
-    .quiz-option {
-      background: #fff;
-      border: 1px solid var(--border);
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-    }
-    .quiz-option:hover {
-      background: rgba(124, 58, 237, 0.08);
-      border-color: var(--primary);
     }
   </style>
 </head>
@@ -536,8 +852,9 @@
     </div>
     
     <div class="role-switcher">
-      <button class="role-btn active" onclick="switchRole('teacher')">Teacher Portal</button>
-      <button class="role-btn" onclick="switchRole('student')">Student Portal</button>
+      <button class="role-btn active" onclick="switchRole('student')">Student Portal</button>
+      <button class="role-btn" onclick="switchRole('teacher')">Teacher Portal</button>
+      <button class="role-btn" onclick="switchRole('admin')">Admin Hub</button>
     </div>
 
     <a href="/Auth/Login" class="exit-demo-btn">Exit Demo</a>
@@ -548,490 +865,448 @@
     
     <!-- ==================== SIDEBARS ==================== -->
     
-    <!-- Teacher Sidebar -->
-    <div class="sidebar" id="sidebar-teacher">
-      <div class="sidebar-brand">
-        📊 EngageTracker
-        <span>Teacher Control Panel</span>
-      </div>
-      <div class="sidebar-menu">
-        <div class="sidebar-section">Main</div>
-        <div class="menu-item active demo-tour-item" data-sec="t-dashboard" onclick="switchSec('t', 'dashboard')" data-tour-title="Teacher Dashboard Overview" data-tour-desc="Provides a central summary of classroom analytics, including total enrolled students, average attendance metrics, warning alerts, and course assignments.">
-          <span class="nav-icon">⚡</span>Dashboard
-        </div>
-        <div class="menu-item demo-tour-item" data-sec="t-students" onclick="switchSec('t', 'students')" data-tour-title="All Students Directory" data-tour-desc="A searchable index showing student details, section details, real-time attendance rate statistics, and their global academic standing.">
-          <span class="nav-icon">👥</span>All Students
-        </div>
-        <div class="menu-item demo-tour-item" data-sec="t-attendance" onclick="switchSec('t', 'attendance')" data-tour-title="Face Attendance Marker" data-tour-desc="Allows teachers to schedule lectures, launch live video streams, and run real-time automated AI facial recognition attendance tracking.">
-          <span class="nav-icon">🎥</span>Mark Attendance
-        </div>
-        
-        <div class="sidebar-section">Reports</div>
-        <div class="menu-item demo-tour-item" data-sec="t-risk" onclick="switchSec('t', 'risk')" data-tour-title="At-Risk Analytics" data-tour-desc="Flagging engine that lists students whose grades or attendance have dropped below threshold, warning teachers to take preventive measures.">
-          <span class="nav-icon">⚠️</span>At-Risk Warning
-        </div>
-        <div class="menu-item demo-tour-item" data-sec="t-engagement" onclick="switchSec('t', 'engagement')" data-tour-title="Gaze/Engagement Report" data-tour-desc="Displays real-time gaze tracking data, focus logs, and graphs indicating active student participation levels in current lectures.">
-          <span class="nav-icon">📈</span>Engagement logs
-        </div>
-      </div>
-    </div>
-
     <!-- Student Sidebar -->
-    <div class="sidebar" id="sidebar-student" style="display:none;">
-      <div class="sidebar-brand">
-        📊 EngageTracker
-        <span>Student Workspace</span>
+    <div class="sidebar" id="sidebar-student">
+      <div class="brand">
+        <div class="brand-icon">📈</div>
+        <div>
+          <div class="brand-name">EngageTracker</div>
+          <div class="brand-sub">Student Portal</div>
+        </div>
       </div>
-      <div class="sidebar-menu">
-        <div class="sidebar-section">Main</div>
-        <div class="menu-item active demo-tour-item" data-sec="s-dashboard" onclick="switchSec('s', 'dashboard')" data-tour-title="Student Dashboard" data-tour-desc="A user-centric portal summarizing your overall GPA performance, average attendance rates, class participation stats, and pending assignments.">
+      <div class="nav">
+        <div class="nav-section">Main</div>
+        <a class="active demo-tour-item" data-tour-title="Student Dashboard Overview" data-tour-desc="A centralized console tracking your semester metrics, current lecture feeds, direct quiz join cards, and academic statistics.">
           <span class="nav-icon">⚡</span>Dashboard
-        </div>
-        <div class="menu-item demo-tour-item" data-sec="s-attendance" onclick="switchSec('s', 'attendance')" data-tour-title="Attendance Records" data-tour-desc="Shows detailed subject-wise attendance logs, present/absent dates calendar, and warning indicators if your attendance is critically low.">
-          <span class="nav-icon">📅</span>My Attendance
-        </div>
-        <div class="menu-item demo-tour-item" data-sec="s-assignments" onclick="switchSec('s', 'assignments')" data-tour-title="Assignments Workspace" data-tour-desc="Displays all active coursework tasks assigned by teachers, due dates, grading status, and custom file upload forms for submissions.">
+        </a>
+        <a class="demo-tour-item" data-tour-title="Attendance Records" data-tour-desc="Shows daily presence logs, calendar heatmaps, and warning indicators when counts drop below university limits.">
+          <span class="nav-icon">📅</span>Attendance
+        </a>
+        <a class="demo-tour-item" data-tour-title="Marks &amp; GPA" data-tour-desc="Lists subject marks, grade reports, and calculates overall GPA trends.">
+          <span class="nav-icon">🎓</span>Marks &amp; GPA
+        </a>
+        <a class="demo-tour-item" data-tour-title="Assignments Workspace" data-tour-desc="Workspace showing active coursework assignments, files, submit deadlines, and upload zones.">
           <span class="nav-icon">📂</span>Assignments
-        </div>
+        </a>
+        <a class="demo-tour-item" data-tour-title="Engagement Analytics" data-tour-desc="A detail page breaking down your attention gaze graphs, face scanner detection scores, and active class participation rates.">
+          <span class="nav-icon">📹</span>Engagement
+        </a>
+        <a class="demo-tour-item" data-tour-title="Class Timetable" data-tour-desc="Shows your section's scheduled class timetable and current active session durations.">
+          <span class="nav-icon">🗓️</span>Timetable
+        </a>
         
-        <div class="sidebar-section">Interactions</div>
-        <div class="menu-item demo-tour-item" data-sec="s-engagement" onclick="switchSec('s', 'engagement')" data-tour-title="Live Classroom &amp; Quizzes" data-tour-desc="Allows students to launch current live class streams, participate in interactive web-based quizzes, and check their live engagement charts.">
-          <span class="nav-icon">🎮</span>Live Quiz &amp; Class
+        <div class="nav-section">Other</div>
+        <a class="demo-tour-item" data-tour-title="Notifications Centre" data-tour-desc="Review warning notifications, class announcements, or alert alerts from teachers.">
+          <span class="nav-icon">🔔</span>Notifications <span class="nav-badge">3</span>
+        </a>
+        <a class="demo-tour-item" data-tour-title="Student Profile" data-tour-desc="Review registered student registration codes, section names, and register your face photo.">
+          <span class="nav-icon">👤</span>My Profile
+        </a>
+        <a class="demo-tour-item" data-tour-title="Live Quiz Dashboard" data-tour-desc="Launches active web quizzes started by teachers for live interaction.">
+          <span class="nav-icon">🎮</span>Live Quiz
+        </a>
+      </div>
+      <div class="sidebar-bottom">
+        <a href="/Auth/Logout" class="logout-btn"><span class="nav-icon">🚪</span>Logout</a>
+      </div>
+    </div>
+
+    <!-- Teacher Sidebar -->
+    <div class="sidebar" id="sidebar-teacher" style="display:none;">
+      <div class="brand">
+        <div class="brand-icon">📈</div>
+        <div>
+          <div class="brand-name">EngageTracker</div>
+          <div class="brand-sub">Teacher Portal</div>
+        </div>
+      </div>
+      <div class="nav">
+        <div class="nav-section">Main</div>
+        <a class="active demo-tour-item" data-tour-title="Teacher Dashboard Console" data-tour-desc="Aggregates classroom numbers, average student attendance rates, warning indexes, and class scheduler shortcuts.">
+          <span class="nav-icon">⚡</span>Dashboard
+        </a>
+        <a class="demo-tour-item" data-tour-title="All Students registry" data-tour-desc="Directory listing all registered students in your classes, with profiles and direct warning dispatch options.">
+          <span class="nav-icon">👥</span>All Students
+        </a>
+        <a class="demo-tour-item" data-tour-title="AI Face Attendance Marker" data-tour-desc="Launch camera streams to automatically scan student faces and register attendance.">
+          <span class="nav-icon">📹</span>Mark Attendance
+        </a>
+        <a class="demo-tour-item" data-tour-title="Enter Marks" data-tour-desc="Gradebook workspace to select subjects and directly input midterm, endterm, or assignment scores.">
+          <span class="nav-icon">📝</span>Enter Marks
+        </a>
+        <a class="demo-tour-item" data-tour-title="Manage Timetables" data-tour-desc="Configure class timings, reschedule sessions, and view your upcoming teaching slots.">
+          <span class="nav-icon">🗓️</span>Manage Timetables
+        </a>
+        
+        <div class="nav-section">Reports</div>
+        <a class="demo-tour-item" data-tour-title="At-Risk Alerts Screen" data-tour-desc="Lists students whose attendance or grades have fallen below critical levels, enabling direct support interventions.">
+          <span class="nav-icon">⚠️</span>At-Risk Students
+        </a>
+        <a class="demo-tour-item" data-tour-title="Assignments Manager" data-tour-desc="Create new homework assignments, upload reference files, and review student submissions.">
+          <span class="nav-icon">📂</span>Assignments
+        </a>
+        <a class="demo-tour-item" data-tour-title="Real-Time Gaze Analytics" data-tour-desc="Review detailed gaze scores, attention logs, and focus timelines of active class streams.">
+          <span class="nav-icon">📊</span>Engagement
+        </a>
+        <a class="demo-tour-item" data-tour-title="Create Live Quiz" data-tour-desc="Launches interactive multiplayer class quizzes for live testing.">
+          <span class="nav-icon">🎮</span>Live Quiz
+        </a>
+      </div>
+      <div class="sidebar-bottom">
+        <a href="/Auth/Logout" class="logout-btn"><span class="nav-icon">🚪</span>Logout</a>
+      </div>
+    </div>
+
+    <!-- Admin Sidebar -->
+    <div class="sidebar" id="sidebar-admin" style="display:none;">
+      <div class="brand">
+        <div class="brand-icon" style="background: #4f46e5; color: #fff;">🛡️</div>
+        <div>
+          <div class="brand-name">Admin Hub</div>
+          <div class="brand-sub">GLOBAL CONTROL</div>
+        </div>
+      </div>
+      <div class="nav">
+        <div class="nav-section">Main</div>
+        <a class="active demo-tour-item" data-tour-title="Admin Overview Dashboard" data-tour-desc="Aggregates system-wide analytics: total registered students, faculty sizes, class counts, and attendance databases.">
+          <span class="nav-icon">⚡</span>Overview
+        </a>
+        
+        <div class="nav-section">Directory</div>
+        <a class="demo-tour-item" data-tour-title="Manage Students" data-tour-desc="Global index to monitor, edit details, or remove student registrations from the database.">
+          <span class="nav-icon">👥</span>Students
+        </a>
+        <a class="demo-tour-item" data-tour-title="Manage Teachers" data-tour-desc="Register new faculty accounts, assign course subjects, and manage access profiles.">
+          <span class="nav-icon">💼</span>Teachers
+        </a>
+        
+        <div class="nav-section">Platform Master Data</div>
+        <a class="demo-tour-item" data-tour-title="Master Timetables" data-tour-desc="Central class timing configuration grid across all sections, departments, and semesters.">
+          <span class="nav-icon">🗓️</span>Master Timetables
+        </a>
+        <a class="demo-tour-item" data-tour-title="Global Attendance Log" data-tour-desc="Audit trail showing every attendance record registered via face-scanners or manual logs.">
+          <span class="nav-icon">📝</span>Global Attendance
+        </a>
+        <a class="demo-tour-item" data-tour-title="Student Academic Records" data-tour-desc="Global review panel of student grades, overall averages, GPAs, and class rankings.">
+          <span class="nav-icon">⭐</span>Student Records
+        </a>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="logout-btn">
+          <span class="nav-icon">👤</span>Super Admin
         </div>
       </div>
     </div>
 
 
-    <!-- ==================== MAIN CONTENT ==================== -->
+    <!-- ==================== MAIN CONTENT AREA ==================== -->
     <div class="main-content">
       
-      <!-- ============ TEACHER VIEW SECTIONS ============ -->
-      <div id="role-teacher-content">
-        
-        <!-- Teacher Dashboard Overview -->
-        <div id="t-sec-dashboard" class="demo-view-section active">
-          <div class="stat-grid">
-            <div class="stat-card demo-tour-item" data-tour-title="Total Students Card" data-tour-desc="Displays the count of enrolled students. You can hover/click to inspect all sections in the main students index.">
-              <div class="stat-icon pu">👥</div>
-              <div class="stat-details">
-                <h3>42</h3>
-                <p>Total Students</p>
-              </div>
-            </div>
-            <div class="stat-card demo-tour-item" data-tour-title="Avg Attendance Tracker" data-tour-desc="Calculates the running attendance percentage across all courses taught by the logged-in teacher.">
-              <div class="stat-icon gr">📅</div>
-              <div class="stat-details">
-                <h3>88.5%</h3>
-                <p>Avg Attendance</p>
-              </div>
-            </div>
-            <div class="stat-card demo-tour-item" data-tour-title="At-Risk Alerts Counter" data-tour-desc="Highlights the count of students with attendance under 75% or GPA below 2.0 requiring active follow-up.">
-              <div class="stat-icon pi">⚠️</div>
-              <div class="stat-details">
-                <h3>3</h3>
-                <p>At-Risk Students</p>
-              </div>
-            </div>
-            <div class="stat-card demo-tour-item" data-tour-title="Active Assignments" data-tour-desc="Total count of active assignments with submit timelines. Click to review student submissions.">
-              <div class="stat-icon bl">📂</div>
-              <div class="stat-details">
-                <h3>5</h3>
-                <p>Active Tasks</p>
-              </div>
-            </div>
+      <!-- ============ 1. STUDENT PORTAL DEMO ============ -->
+      <div id="portal-student" class="portal-content active">
+        <div class="topbar">
+          <div class="topbar-left">
+            <h4>Dashboard</h4>
+            <p>Welcome back, Ankit Kumar Jha 👋</p>
           </div>
-
-          <div class="dashboard-grid">
-            <div class="card demo-tour-item" data-tour-title="Class Attendance Trend" data-tour-desc="Interactive line chart tracking class presence records week-over-week. Helps spot drops in active classroom numbers.">
-              <div class="card-title">Attendance Overview (Weekly)</div>
-              <div style="height: 250px;">
-                <canvas id="teacherAttendanceChart"></canvas>
-              </div>
-            </div>
-            <div class="card demo-tour-item" data-tour-title="Recent At-Risk List" data-tour-desc="Real-time warning list identifying students requiring attention. Lets you send immediate notifications directly from the dashboard.">
-              <div class="card-title">Recent At-Risk alerts</div>
-              <div class="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Att. %</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Amit Kumar</td>
-                      <td><span class="badge badge-danger">64%</span></td>
-                      <td><span style="font-size: 0.75rem; color: var(--primary); cursor: pointer;">⚠️ Send Alert</span></td>
-                    </tr>
-                    <tr>
-                      <td>Priya Sharma</td>
-                      <td><span class="badge badge-danger">69%</span></td>
-                      <td><span style="font-size: 0.75rem; color: var(--primary); cursor: pointer;">⚠️ Send Alert</span></td>
-                    </tr>
-                    <tr>
-                      <td>Rahul Singh</td>
-                      <td><span class="badge badge-warning">73%</span></td>
-                      <td><span style="font-size: 0.75rem; color: var(--primary); cursor: pointer;">⚠️ Send Alert</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+          <div class="topbar-right">
+            <div class="bell-btn demo-tour-item" data-tour-title="Notifications Bell" data-tour-desc="Flashes when there are updates from teachers, quiz links, or low attendance warnings.">🔔</div>
+            <div class="user-chip demo-tour-item" data-tour-title="Student User Profile" data-tour-desc="Displays the logged-in student's avatar and name. Select to view credentials and registered photo logs.">
+              <div class="user-avatar" style="background: #4f46e5;">A</div>Ankit Kumar Jha
             </div>
           </div>
         </div>
 
-        <!-- Teacher All Students View -->
-        <div id="t-sec-students" class="demo-view-section">
-          <div class="card demo-tour-item" data-tour-title="Students Directory Grid" data-tour-desc="Lists all student profiles in your classes. Provides instant options to view profile, attendance timeline, or exam transcripts.">
-            <div class="card-title">Students Registry (Section A &amp; B)</div>
+        <!-- Dynamic Live Class Alert (Hidden initially, visible if Teacher starts class) -->
+        <div class="live-alert-card demo-tour-item" id="student-live-alert" style="display:none;" data-tour-title="Dynamic Live Class Banner" data-tour-desc="Appears instantly when a teacher clicks 'Start Class' on the Teacher dashboard. Links students to the camera verification stream.">
+          <div class="live-alert-text">
+            <h3><span class="live-alert-dot"></span> Lecture Live Now: Intro to DSA</h3>
+            <p>Mark attendance and launch real-time face tracking logs.</p>
+          </div>
+          <button class="live-alert-btn" onclick="alert('Demo Attendance Registered via Face Scanner! Mocking verified attendance log...')">Join Live Class</button>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card demo-tour-item" data-tour-title="Attendance Score Card" data-tour-desc="Your cumulative class presence percentage. Calculated from checked logs.">
+            <div class="stat-icon pu">📅</div>
+            <div class="stat-details">
+              <h3>100%</h3>
+              <p>Avg Attendance</p>
+              <div class="stat-badge" style="color: var(--success);">✅ Good</div>
+              <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 100%; background: var(--primary);"></div></div>
+            </div>
+          </div>
+          <div class="stat-card demo-tour-item" data-tour-title="GPA Score Card" data-tour-desc="Overall score average calculated from midterms, quizzes, and project grades.">
+            <div class="stat-icon pu">🎓</div>
+            <div class="stat-details">
+              <h3>5.0</h3>
+              <p>Overall GPA</p>
+              <div class="stat-badge" style="color: var(--accent);">📈 OK</div>
+              <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 80%; background: var(--accent);"></div></div>
+            </div>
+          </div>
+          <div class="stat-card demo-tour-item" data-tour-title="Classes Present Card" data-tour-desc="Running tally of classroom attendances against total conducted sessions.">
+            <div class="stat-icon gr">✅</div>
+            <div class="stat-details">
+              <h3>9/9</h3>
+              <p>Classes Present</p>
+              <div class="stat-badge" style="color: var(--success);">9 classes</div>
+              <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 100%; background: var(--success);"></div></div>
+            </div>
+          </div>
+          <div class="stat-card demo-tour-item" data-tour-title="Pending Assignments Card" data-tour-desc="Pending tasks requiring uploads or documents. Currently completely clean.">
+            <div class="stat-icon or">📂</div>
+            <div class="stat-details">
+              <h3>0</h3>
+              <p>Assignments</p>
+              <div class="stat-badge" style="color: var(--success);">✅ Done</div>
+              <div class="stat-progress-bar"><div class="stat-progress-fill" style="width: 0%; background: var(--warning);"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card demo-tour-item" data-tour-title="Recent Attendance list" data-tour-desc="Timeline showing date records and verified status of classes attended.">
+            <div class="card-header-row">
+              <div class="card-title">📅 Recent Attendance</div>
+              <a class="card-link">View all →</a>
+            </div>
             <div class="table-container">
               <table>
-                <thead>
-                  <tr>
-                    <th>Student Name</th>
-                    <th>Roll Number</th>
-                    <th>Attendance</th>
-                    <th>Avg Score</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
                 <tbody>
                   <tr>
-                    <td>
-                      <div class="user-profile">
-                        <div class="user-avatar" style="background:#5b37b7;">AK</div>
-                        <div>Amit Kumar</div>
-                      </div>
-                    </td>
-                    <td>GLA2026/0122</td>
-                    <td>64%</td>
-                    <td>42%</td>
-                    <td><span class="badge badge-danger">At-Risk</span></td>
+                    <td><strong>2026-04-22</strong><div style="font-size:0.75rem; color:var(--text-muted);">ML</div></td>
+                    <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
                   </tr>
                   <tr>
-                    <td>
-                      <div class="user-profile">
-                        <div class="user-avatar" style="background:#05cd99;">SD</div>
-                        <div>Sneha Das</div>
-                      </div>
-                    </td>
-                    <td>GLA2026/0209</td>
-                    <td>94%</td>
-                    <td>88%</td>
-                    <td><span class="badge badge-success">Excellent</span></td>
+                    <td><strong>2026-05-29</strong><div style="font-size:0.75rem; color:var(--text-muted);">DSA</div></td>
+                    <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
                   </tr>
                   <tr>
-                    <td>
-                      <div class="user-profile">
-                        <div class="user-avatar" style="background:#39b8ff;">PS</div>
-                        <div>Priyanka Sen</div>
-                      </div>
-                    </td>
-                    <td>GLA2026/0091</td>
-                    <td>88%</td>
-                    <td>76%</td>
-                    <td><span class="badge badge-success">Good</span></td>
+                    <td><strong>2026-05-04</strong><div style="font-size:0.75rem; color:var(--text-muted);">DSA</div></td>
+                    <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>2026-04-04</strong><div style="font-size:0.75rem; color:var(--text-muted);">DSA</div></td>
+                    <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>2026-04-08</strong><div style="font-size:0.75rem; color:var(--text-muted);">C# > NET</div></td>
+                    <td style="text-align:right;"><span class="badge badge-present">Present</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card demo-tour-item" data-tour-title="Subject-wise GPA list" data-tour-desc="Details your grade records subject-wise. Shows GPA rankings for separate modules.">
+            <div class="card-header-row">
+              <div class="card-title">🎓 Subject-wise GPA</div>
+              <a class="card-link">View all →</a>
+            </div>
+            <div class="table-container">
+              <table>
+                <tbody>
+                  <tr>
+                    <td><strong>DSA</strong></td>
+                    <td style="text-align:right;"><span class="gpa-badge gpa-green">GPA 10.0</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>dbms</strong></td>
+                    <td style="text-align:right;"><span class="gpa-badge gpa-red">GPA 0.0</span></td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-
-        <!-- Teacher Mark Attendance View -->
-        <div id="t-sec-attendance" class="demo-view-section">
-          <div class="dashboard-grid">
-            <div class="card demo-tour-item" data-tour-title="AI Camera Scan Sandbox" data-tour-desc="Mock preview of the AI Facial Attendance scan. Real system detects face coordinate points, checks gaze attention metrics, and registers attendance.">
-              <div class="card-title">Face Scan Camera Stream (Preview)</div>
-              <div class="camera-box">
-                <div class="scanning-line"></div>
-                <div class="camera-overlay"></div>
-                <span style="color: #656c9a; font-weight: 500; font-size: 0.9rem; z-index: 10;">Scanning Class Attendees...</span>
-              </div>
-            </div>
-            <div class="card demo-tour-item" data-tour-title="Live Attendance List" data-tour-desc="Live list of student faces verified and check-in statuses. Shows timestamp log records of presence registration.">
-              <div class="card-title">Verification Logs</div>
-              <div class="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Time</th>
-                      <th>AI Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Sneha Das</td>
-                      <td>10:04 AM</td>
-                      <td><span class="badge badge-success">Verified</span></td>
-                    </tr>
-                    <tr>
-                      <td>Priyanka Sen</td>
-                      <td>10:05 AM</td>
-                      <td><span class="badge badge-success">Verified</span></td>
-                    </tr>
-                    <tr>
-                      <td>Amit Kumar</td>
-                      <td>--:--</td>
-                      <td><span class="badge badge-danger">Not Found</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Teacher At Risk View -->
-        <div id="t-sec-risk" class="demo-view-section">
-          <div class="card demo-tour-item" data-tour-title="At-Risk Alerts Console" data-tour-desc="Automated risk analytics screen. Compares grades and attendance trends and flags critical cases. Allows emailing parents or scheduling support sessions directly.">
-            <div class="card-title">At-Risk Student Monitoring Analytics</div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Student</th>
-                    <th>Attendance</th>
-                    <th>GPA Rank</th>
-                    <th>Primary Trigger</th>
-                    <th>Quick Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Amit Kumar</td>
-                    <td>64%</td>
-                    <td>1.8 GPA</td>
-                    <td>Low Attendance &amp; GPA</td>
-                    <td><button style="padding: 4px 10px; background: #ee5d50; color: #fff; border:none; border-radius:6px; font-size:0.75rem; cursor:pointer;">Parent Mail</button></td>
-                  </tr>
-                  <tr>
-                    <td>Priya Sharma</td>
-                    <td>69%</td>
-                    <td>2.1 GPA</td>
-                    <td>Low Attendance</td>
-                    <td><button style="padding: 4px 10px; background: #ee5d50; color: #fff; border:none; border-radius:6px; font-size:0.75rem; cursor:pointer;">Parent Mail</button></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Teacher Engagement Report View -->
-        <div id="t-sec-engagement" class="demo-view-section">
-          <div class="card demo-tour-item" data-tour-title="Class Focus Logs" data-tour-desc="Displays the real-time engagement and focus analytics for active lectures. Combines gaze scores and system interaction tracking into a single unified performance index.">
-            <div class="card-title">Real-Time Lecture Engagement Monitor</div>
-            <div style="height: 250px; margin-bottom: 1.5rem;">
-              <canvas id="teacherEngagementChart"></canvas>
-            </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Class Session</th>
-                    <th>Avg Focus Gaze Score</th>
-                    <th>Quiz Submission rate</th>
-                    <th>Attention Level</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Intro to AI Algorithms (10:00 AM)</td>
-                    <td>82%</td>
-                    <td>94%</td>
-                    <td><span class="badge badge-success">High</span></td>
-                  </tr>
-                  <tr>
-                    <td>Data Structures Lab (11:30 AM)</td>
-                    <td>67%</td>
-                    <td>78%</td>
-                    <td><span class="badge badge-warning">Moderate</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
       </div>
 
-
-      <!-- ============ STUDENT VIEW SECTIONS ============ -->
-      <div id="role-student-content" style="display:none;">
-        
-        <!-- Live Class alert component inside Student workspace -->
-        <div class="live-join-card demo-tour-item" data-tour-title="Live Class Alert Notification" data-tour-desc="A dynamic notification box that flashes instantly on the student workspace when a teacher starts a live class session, enabling quick-join features.">
-          <div class="live-text">
-            <h3>🎥 Lecture Live Now: Intro to AI Algorithms</h3>
-            <p>Dr. R.K. Varma is streaming now. Join to launch face scanner and mark attendance.</p>
+      <!-- ============ 2. TEACHER PORTAL DEMO ============ -->
+      <div id="portal-teacher" class="portal-content">
+        <div class="topbar">
+          <div class="topbar-left">
+            <h4>Dashboard</h4>
+            <p>Good day, Dr. Shreya Sharma 👋</p>
           </div>
-          <button class="live-btn">Join Live Class</button>
-        </div>
-
-        <!-- Student Dashboard Overview -->
-        <div id="s-sec-dashboard" class="demo-view-section active">
-          <div class="stat-grid">
-            <div class="stat-card demo-tour-item" data-tour-title="Student Attendance Status" data-tour-desc="Tracks your running average classroom presence records. Must be kept above 75% to prevent warnings.">
-              <div class="stat-icon pu">📅</div>
-              <div class="stat-details">
-                <h3>92%</h3>
-                <p>My Attendance</p>
-              </div>
-            </div>
-            <div class="stat-card demo-tour-item" data-tour-title="Student Cumulative GPA" data-tour-desc="Your cumulative GPA calculated dynamically from entered grades and assignment scores.">
-              <div class="stat-icon bl">🎓</div>
-              <div class="stat-details">
-                <h3>3.65</h3>
-                <p>Current GPA</p>
-              </div>
-            </div>
-            <div class="stat-card demo-tour-item" data-tour-title="Active Task Alerts" data-tour-desc="Pending homework tasks, reports, or submissions due this week.">
-              <div class="stat-icon pi">⚠️</div>
-              <div class="stat-details">
-                <h3>2 Pending</h3>
-                <p>Assignments</p>
-              </div>
-            </div>
-            <div class="stat-card demo-tour-item" data-tour-title="Student Engagement Grade" data-tour-desc="A combined rating based on your live quiz response speed, class join times, and gaze metrics.">
-              <div class="stat-icon gr">✅</div>
-              <div class="stat-details">
-                <h3>A+ Grade</h3>
-                <p>Engagement Status</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="dashboard-grid">
-            <div class="card demo-tour-item" data-tour-title="Grade performance Radar Chart" data-tour-desc="Shows your strengths and weaknesses across different modules like exams, quizzes, attendance, and project work.">
-              <div class="card-title">Subject-Wise Performance Metrics</div>
-              <div style="height: 250px;">
-                <canvas id="studentPerformanceChart"></canvas>
-              </div>
-            </div>
-            <div class="card demo-tour-item" data-tour-title="Student Task Board" data-tour-desc="A concise timeline showing upcoming assignments. You can click any task item to navigate directly to the assignment workspace.">
-              <div class="card-title">Upcoming Tasks &amp; Deadlines</div>
-              <div class="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Assignment</th>
-                      <th>Due Date</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Neural Nets Assignment 1</td>
-                      <td>Tomorrow, 5 PM</td>
-                      <td><span class="badge badge-warning">Pending</span></td>
-                    </tr>
-                    <tr>
-                      <td>Data Structures Quiz 2</td>
-                      <td>16 July, 11 AM</td>
-                      <td><span class="badge badge-warning">Pending</span></td>
-                    </tr>
-                    <tr>
-                      <td>SQL Database design doc</td>
-                      <td>Completed</td>
-                      <td><span class="badge badge-success">Submitted</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+          <div class="topbar-right">
+            <div class="bell-btn demo-tour-item" data-tour-title="Faculty Notifications" data-tour-desc="Notifications for submitted assignments, at-risk warnings, and quiz logs.">🔔</div>
+            <div class="user-chip demo-tour-item" data-tour-title="Teacher User Profile" data-tour-desc="Logged-in teacher profile, including name and subject profile links.">
+              <div class="user-avatar" style="background: #4f46e5;">D</div>Dr. Shreya Sharma
             </div>
           </div>
         </div>
 
-        <!-- Student Attendance Details View -->
-        <div id="s-sec-attendance" class="demo-view-section">
-          <div class="card demo-tour-item" data-tour-title="Subject attendance table" data-tour-desc="A comprehensive subject-wise breakdown of lectures present vs. total lectures. Warns you if you are close to dropping below criteria.">
-            <div class="card-title">Subject-wise Class Attendance Logs</div>
+        <div class="stat-grid">
+          <div class="stat-card demo-tour-item" data-tour-title="Enrolled Students Card" data-tour-desc="Total unique students registered across courses assigned to you.">
+            <div class="stat-icon pu">👥</div>
+            <div class="stat-details">
+              <h3>5</h3>
+              <p>Total Students</p>
+            </div>
+          </div>
+          <div class="stat-card demo-tour-item" data-tour-title="Class Attendance Rate Card" data-tour-desc="Running average attendance percentage across all scheduled class sections.">
+            <div class="stat-icon bl">📊</div>
+            <div class="stat-details">
+              <h3>90%</h3>
+              <p>Avg Attendance</p>
+            </div>
+          </div>
+          <div class="stat-card demo-tour-item" data-tour-title="At-Risk Alerts Card" data-tour-desc="Students with critical metrics (attendance below 75% or low performance) needing follow-up.">
+            <div class="stat-icon pi">⚠️</div>
+            <div class="stat-details">
+              <h3>1</h3>
+              <p>At-Risk Students</p>
+            </div>
+          </div>
+          <div class="stat-card demo-tour-item" data-tour-title="Coursework Assignments Count" data-tour-desc="Total active homework tasks and quizzes running this semester.">
+            <div class="stat-icon or">📂</div>
+            <div class="stat-details">
+              <h3>7</h3>
+              <p>Assignments</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card demo-tour-item" data-tour-title="Recent Students Table" data-tour-desc="List of students registered in your class section. Displays roll numbers and division mappings.">
+            <div class="card-header-row">
+              <div class="card-title">👥 Recent Students</div>
+              <a class="card-link">View all →</a>
+            </div>
             <div class="table-container">
               <table>
                 <thead>
                   <tr>
-                    <th>Subject</th>
-                    <th>Lectures Attended</th>
-                    <th>Attendance %</th>
-                    <th>Requirement status</th>
+                    <th>Name</th>
+                    <th>Roll No</th>
+                    <th>Section</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Artificial Intelligence</td>
-                    <td>23 / 25</td>
-                    <td>92%</td>
-                    <td><span class="badge badge-success">Good</span></td>
+                    <td><strong>Ankit Kumar Jha</strong></td>
+                    <td>11</td>
+                    <td>O</td>
                   </tr>
                   <tr>
-                    <td>Database Management Systems</td>
-                    <td>19 / 20</td>
-                    <td>95%</td>
-                    <td><span class="badge badge-success">Excellent</span></td>
+                    <td><strong>Ritik Raj Singh</strong></td>
+                    <td>55</td>
+                    <td>O</td>
                   </tr>
                   <tr>
-                    <td>Theory of Computation</td>
-                    <td>13 / 18</td>
-                    <td>72%</td>
-                    <td><span class="badge badge-danger">Below Limit (75%)</span></td>
+                    <td><strong>NAMAN yadav</strong></td>
+                    <td>41</td>
+                    <td>o</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Naman Yadav</strong></td>
+                    <td>41</td>
+                    <td>O</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Arihant Sharma</strong></td>
+                    <td>18</td>
+                    <td>O</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-        </div>
 
-        <!-- Student Assignments View -->
-        <div id="s-sec-assignments" class="demo-view-section">
-          <div class="dashboard-grid">
-            <div class="card demo-tour-item" data-tour-title="Pending Homework Index" data-tour-desc="Workspace listing all tasks assigned to you. Provides descriptions, point allocations, and attachments.">
-              <div class="card-title">Assigned Coursework (Active Tasks)</div>
-              <div style="display:flex; flex-direction:column; gap: 12px;">
-                <div style="border: 1px solid var(--border); border-radius:10px; padding: 12px;">
-                  <h4 style="color:var(--text-main); font-size:0.9rem;">Neural Nets Assignment 1</h4>
-                  <p style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;">Implement a basic feedforward backpropagation model using Numpy library.</p>
-                  <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.75rem; font-weight:600;">
-                    <span style="color:#d4a000;">⚠️ Due: Tomorrow 5:00 PM</span>
-                    <span style="color:var(--primary);">Points: 50 max</span>
-                  </div>
-                </div>
+          <div class="card demo-tour-item" data-tour-title="Live Classroom Control Panel" data-tour-desc="Allows teachers to set subjects, session duration, and start a class. This instantly broadcasts a join card to students.">
+            <div class="card-title">📹 Live Class Control</div>
+            <div class="control-group">
+              <label class="control-label">Subject</label>
+              <input type="text" class="control-input" id="class-subject" value="DSA"/>
+              
+              <label class="control-label">Duration (Minutes)</label>
+              <input type="number" class="control-input" id="class-duration" value="60"/>
+              
+              <div class="btn-row">
+                <button class="btn-action btn-start" onclick="toggleDemoClass(true)">▶ Start Class</button>
+                <button class="btn-action btn-end" onclick="toggleDemoClass(false)">■ End Class</button>
               </div>
-            </div>
-            <div class="card demo-tour-item" data-tour-title="Drag-and-Drop Assignment Upload Sandbox" data-tour-desc="Interactive mock drag-and-drop workspace. Students can drop files (PDF, ZIP, DOCX) here to submit their tasks.">
-              <div class="card-title">Upload Homework Submission</div>
-              <div style="border:2px dashed var(--border); border-radius:12px; height: 180px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;">
-                <span style="font-size:2rem;">📁</span>
-                <span style="font-size:0.8rem; font-weight:600; color:var(--text-main);">Drag &amp; Drop files here</span>
-                <span style="font-size:0.7rem; color:var(--text-muted);">Max file size: 25MB (PDF/ZIP only)</span>
+
+              <div class="status-indicator">
+                <div class="status-dot" id="demo-class-dot"></div>
+                <span id="demo-class-text">Not Live</span>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Student Live Quiz & Interactions -->
-        <div id="s-sec-engagement" class="demo-view-section">
-          <div class="card demo-tour-item" data-tour-title="Live Quiz Interaction View" data-tour-desc="Mock interface of an active quiz session. Students answer questions within an active count timer. Quiz scores are recorded live.">
-            <div class="card-title">Live Lecture Quiz Portal</div>
-            <div class="quiz-card">
-              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:12px;">
-                <span style="font-size:0.8rem; font-weight:700; color:var(--primary);">QUESTION 3 OF 5</span>
-                <span style="background:rgba(238, 93, 80, 0.1); color:var(--danger); padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:800;">⏱️ 14s Left</span>
-              </div>
-              <h3 style="font-size:1rem; color:var(--text-main); font-weight:600;">Which activation function suffers from the vanishing gradient problem?</h3>
-              <div class="quiz-options">
-                <div class="quiz-option">ReLU (Rectified Linear Unit)</div>
-                <div class="quiz-option">Sigmoid</div>
-                <div class="quiz-option">LeakyReLU</div>
-                <div class="quiz-option">ELU</div>
-              </div>
+      <!-- ============ 3. ADMIN PORTAL DEMO ============ -->
+      <div id="portal-admin" class="portal-content">
+        <div class="topbar">
+          <div class="topbar-left">
+            <h4 style="color: #fff;">Dashboard Overview</h4>
+            <p>Platform-wide statistics and management.</p>
+          </div>
+          <div class="topbar-right">
+            <div class="bell-btn demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05); color:#fff;" data-tour-title="System Logs Alert" data-tour-desc="Reviews global log database activity alerts.">🔔</div>
+            <div class="user-chip demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05); color:#fff;">
+              <div class="user-avatar" style="background: #4f46e5;">SA</div>Super Admin
             </div>
           </div>
         </div>
 
+        <div class="stat-grid">
+          <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global Students Tally" data-tour-desc="Sum total of all student accounts registered across the database.">
+            <div class="stat-icon pu" style="background: rgba(79, 70, 229, 0.15); color: #7b59d9;">👥</div>
+            <div class="stat-details">
+              <h3 style="color:#fff;">5</h3>
+              <p>TOTAL STUDENTS</p>
+            </div>
+          </div>
+          <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Global Faculty Tally" data-tour-desc="Count of registered teacher and staff accounts on the tracker platform.">
+            <div class="stat-icon pu" style="background: rgba(79, 70, 229, 0.15); color: #7b59d9;">💼</div>
+            <div class="stat-details">
+              <h3 style="color:#fff;">1</h3>
+              <p>TOTAL FACULTY</p>
+            </div>
+          </div>
+          <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Scheduled Classes" data-tour-desc="Number of currently active or scheduled class schedules config.">
+            <div class="stat-icon pi" style="background: rgba(238, 93, 80, 0.15); color: #ee5d50;">🗓️</div>
+            <div class="stat-details">
+              <h3 style="color:#fff;">4</h3>
+              <p>SCHEDULED CLASSES</p>
+            </div>
+          </div>
+          <div class="stat-card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Attendance Logs Auditor" data-tour-desc="Total check-in presence records logged by students via scanners or manuals.">
+            <div class="stat-icon gr" style="background: rgba(5, 205, 153, 0.15); color: #05cd99;">✅</div>
+            <div class="stat-details">
+              <h3 style="color:#fff;">21</h3>
+              <p>ATTENDANCE LOGS</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card demo-tour-item" style="background:#151a30; border-color:rgba(255,255,255,0.05);" data-tour-title="Admin Hub quick info card" data-tour-desc="Provides platform guidelines to help global administrators configure records.">
+          <div class="admin-info-box">
+            <div class="admin-info-header">
+              <span>ℹ️</span> Admin Quick Information
+            </div>
+            <div class="admin-info-desc">
+              Welcome to the central Admin Hub. You can use the sidebar to navigate through global platform data.
+            </div>
+            <div class="admin-info-list">
+              <div class="admin-info-item">
+                <span>📁</span> <div><strong>Directory:</strong> Monitor and remove users securely.</div>
+              </div>
+              <div class="admin-info-item">
+                <span>🗓️</span> <div><strong>Timetables:</strong> View every active class schedule across all sections.</div>
+              </div>
+              <div class="admin-info-item">
+                <span>📊</span> <div><strong>Global Attendance:</strong> Access a raw, unfiltered view of every attendance mark submitted by teachers.</div>
+              </div>
+              <div class="admin-info-item">
+                <span>⭐</span> <div><strong>Student Records:</strong> Review marks and quiz scores across all subjects and campuses.</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -1056,140 +1331,65 @@
 
   <!-- Javascript Logic -->
   <script>
-    // Variables for Chart Instances
-    let tAttChartInstance = null;
-    let tEngChartInstance = null;
-    let sPerfChartInstance = null;
-
-    // Switch between Student and Teacher dashboards
+    // Toggle role dashboard
     function switchRole(role) {
-      // Toggle switcher buttons
+      // Toggle button states
       document.querySelectorAll('.role-switcher .role-btn').forEach(btn => btn.classList.remove('active'));
       
-      // Get the correct button to set active
       const buttons = document.querySelectorAll('.role-switcher .role-btn');
-      if (role === 'teacher') {
+      
+      // Hide all sidebars and portal contents
+      document.getElementById('sidebar-student').style.display = 'none';
+      document.getElementById('sidebar-teacher').style.display = 'none';
+      document.getElementById('sidebar-admin').style.display = 'none';
+      
+      document.getElementById('portal-student').classList.remove('active');
+      document.getElementById('portal-teacher').classList.remove('active');
+      document.getElementById('portal-admin').classList.remove('active');
+      
+      // Remove body dark mode if active
+      document.body.classList.remove('dark-mode');
+
+      // Switch
+      if (role === 'student') {
         buttons[0].classList.add('active');
-        document.getElementById('role-teacher-content').style.display = 'block';
-        document.getElementById('role-student-content').style.display = 'none';
-        document.getElementById('sidebar-teacher').style.display = 'flex';
-        document.getElementById('sidebar-student').style.display = 'none';
-        switchSec('t', 'dashboard');
-      } else {
-        buttons[1].classList.add('active');
-        document.getElementById('role-teacher-content').style.display = 'none';
-        document.getElementById('role-student-content').style.display = 'block';
-        document.getElementById('sidebar-teacher').style.display = 'none';
         document.getElementById('sidebar-student').style.display = 'flex';
-        switchSec('s', 'dashboard');
+        document.getElementById('portal-student').classList.add('active');
+      } else if (role === 'teacher') {
+        buttons[1].classList.add('active');
+        document.getElementById('sidebar-teacher').style.display = 'flex';
+        document.getElementById('portal-teacher').classList.add('active');
+      } else if (role === 'admin') {
+        buttons[2].classList.add('active');
+        document.getElementById('sidebar-admin').style.display = 'flex';
+        document.getElementById('portal-admin').classList.add('active');
+        // Enable dark mode for Admin view
+        document.body.classList.add('dark-mode');
       }
     }
 
-    // Switch between sidebar subsections
-    function switchSec(prefix, sectionId) {
-      // Deactivate all sidebar items for the current active role
-      const sidebarContainer = document.getElementById(`sidebar-${prefix === 't' ? 'teacher' : 'student'}`);
-      sidebarContainer.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+    // Toggle live class simulation from Teacher Dashboard
+    function toggleDemoClass(isLive) {
+      const dot = document.getElementById('demo-class-dot');
+      const text = document.getElementById('demo-class-text');
+      const studentAlert = document.getElementById('student-live-alert');
 
-      // Find selected menu item and make it active
-      const selectedMenuItem = Array.from(sidebarContainer.querySelectorAll('.menu-item')).find(item => item.getAttribute('data-sec') === `${prefix}-${sectionId}`);
-      if (selectedMenuItem) {
-        selectedMenuItem.classList.add('active');
-      }
-
-      // Hide all demo view sections under the current role wrapper
-      const contentWrapper = document.getElementById(`role-${prefix === 't' ? 'teacher' : 'student'}-content`);
-      contentWrapper.querySelectorAll('.demo-view-section').forEach(sec => sec.classList.remove('active'));
-
-      // Show selected section view
-      const selectedView = document.getElementById(`${prefix}-sec-${sectionId}`);
-      if (selectedView) {
-        selectedView.classList.add('active');
-      }
-
-      // Re-initialize Charts when view becomes active
-      setTimeout(() => {
-        initCharts(prefix, sectionId);
-      }, 50);
-    }
-
-    // Chart.js Mock Initialization Engine
-    function initCharts(prefix, sectionId) {
-      if (prefix === 't' && sectionId === 'dashboard') {
-        const ctx = document.getElementById('teacherAttendanceChart');
-        if (ctx) {
-          if (tAttChartInstance) tAttChartInstance.destroy();
-          tAttChartInstance = new Chart(ctx.getContext('2d'), {
-            type: 'line',
-            data: {
-              labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
-              datasets: [{
-                label: 'Class Attendance Rate (%)',
-                data: [84, 87, 85, 91, 89, 92],
-                borderColor: '#7c3aed',
-                backgroundColor: 'rgba(124, 58, 237, 0.05)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.3
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: { min: 50, max: 100 }
-              }
-            }
-          });
-        }
-      } else if (prefix === 't' && sectionId === 'engagement') {
-        const ctx = document.getElementById('teacherEngagementChart');
-        if (ctx) {
-          if (tEngChartInstance) tEngChartInstance.destroy();
-          tEngChartInstance = new Chart(ctx.getContext('2d'), {
-            type: 'bar',
-            data: {
-              labels: ['Class Joiners', 'Active Screen Time', 'Gaze focus', 'Response rate'],
-              datasets: [{
-                data: [95, 78, 65, 88],
-                backgroundColor: ['#7c3aed', '#39b8ff', '#05cd99', '#ffce20'],
-                borderRadius: 6
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: { min: 0, max: 100 }
-              }
-            }
-          });
-        }
-      } else if (prefix === 's' && sectionId === 'dashboard') {
-        const ctx = document.getElementById('studentPerformanceChart');
-        if (ctx) {
-          if (sPerfChartInstance) sPerfChartInstance.destroy();
-          sPerfChartInstance = new Chart(ctx.getContext('2d'), {
-            type: 'radar',
-            data: {
-              labels: ['Attendance', 'Midterms', 'Assignments', 'Quizzes', 'Class Participation'],
-              datasets: [{
-                label: 'My Scores',
-                data: [92, 85, 90, 80, 95],
-                borderColor: '#39b8ff',
-                backgroundColor: 'rgba(57, 184, 255, 0.2)',
-                borderWidth: 2
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } }
-            }
-          });
-        }
+      if (isLive) {
+        dot.classList.add('active');
+        text.textContent = 'Live (Duration: ' + document.getElementById('class-duration').value + 'm)';
+        text.style.color = 'var(--success)';
+        
+        // Show class banner in student portal view
+        studentAlert.style.display = 'flex';
+        
+        alert('Simulated class started! Switch to the Student Portal view to see the Live Class banner.');
+      } else {
+        dot.classList.remove('active');
+        text.textContent = 'Not Live';
+        text.style.color = '';
+        
+        // Hide banner in student portal
+        studentAlert.style.display = 'none';
       }
     }
 
@@ -1224,11 +1424,6 @@
       if (target) {
         tooltip.classList.remove('visible');
       }
-    });
-
-    // Run charts on initial load
-    window.addEventListener('load', () => {
-      initCharts('t', 'dashboard');
     });
   </script>
 </body>
