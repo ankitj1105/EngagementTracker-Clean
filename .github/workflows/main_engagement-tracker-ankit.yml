@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - my-engagement-tracker
+name: Build and deploy ASP.Net Core app to Azure Web App - engagement-tracker-ankit
 
 on:
   push:
@@ -38,18 +38,28 @@ jobs:
   deploy:
     runs-on: windows-latest
     needs: build
-    
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
       
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_92AAA5E910A746C3B0487B951F1ACD7E }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FBD779104B744F5CB8E4662036200CCB }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_19561D5F630B4236A62A1B12B26B4C43 }}
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'my-engagement-tracker'
+          app-name: 'engagement-tracker-ankit'
           slot-name: 'Production'
           package: .
-          publish-profile: '<publishData><publishProfile profileName="my-engagement-tracker - Web Deploy" publishMethod="MSDeploy" publishUrl="my-engagement-tracker-cbakcva8dpfxb5en.scm.centralindia-01.azurewebsites.net:443" msdeploySite="my-engagement-tracker" userName="$my-engagement-tracker" userPWD="9ra3hSaknt2qqP8uHfFxAoCRoLMtbnHtP8gXmZ4EE3MGW0bsDSGvPo32a4MR" destinationAppUrl="https://my-engagement-tracker-cbakcva8dpfxb5en.centralindia-01.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="my-engagement-tracker - FTP" publishMethod="FTP" publishUrl="ftps://waws-prod-pn1-003.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="my-engagement-tracker\$my-engagement-tracker" userPWD="9ra3hSaknt2qqP8uHfFxAoCRoLMtbnHtP8gXmZ4EE3MGW0bsDSGvPo32a4MR" destinationAppUrl="https://my-engagement-tracker-cbakcva8dpfxb5en.centralindia-01.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="my-engagement-tracker - Zip Deploy" publishMethod="ZipDeploy" publishUrl="my-engagement-tracker-cbakcva8dpfxb5en.scm.centralindia-01.azurewebsites.net:443" userName="$my-engagement-tracker" userPWD="9ra3hSaknt2qqP8uHfFxAoCRoLMtbnHtP8gXmZ4EE3MGW0bsDSGvPo32a4MR" destinationAppUrl="https://my-engagement-tracker-cbakcva8dpfxb5en.centralindia-01.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="my-engagement-tracker - ReadOnly - FTP" publishMethod="FTP" publishUrl="ftps://waws-prod-pn1-003dr.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="my-engagement-tracker\$my-engagement-tracker" userPWD="9ra3hSaknt2qqP8uHfFxAoCRoLMtbnHtP8gXmZ4EE3MGW0bsDSGvPo32a4MR" destinationAppUrl="https://my-engagement-tracker-cbakcva8dpfxb5en.centralindia-01.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile></publishData>'
+          
